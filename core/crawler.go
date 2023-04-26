@@ -61,39 +61,19 @@ func (c *Crawler) ExtractLinks(page *webtree.Page) (links []string) {
 	return
 }
 
-//func (c *Crawler) CrawlNode(w *webtree.Node, level int) {
-//	if level <= 0 {
-//		return
-//	}
-//	c.Fetch(&w.Page)
-//	links := c.ExtractLinks(&w.Page)
-//	for _, link := range links {
-//		fmt.Print("Level: ", level, " ")
-//		child := w.AddChild(webtree.Page{})
-//		child.Page.SetUrl(link)
-//		c.CrawlNode(child, level-1)
-//	}
-//}
-
 func (c *Crawler) CrawlNode(w *webtree.Node, level int) {
-	// BFS implementation
-	if level <= 0 {
-		return
-	}
-	c.Fetch(&w.Page)
-	links := c.ExtractLinks(&w.Page)
-	queue := []*webtree.Node{w}
-	nextQueue := []*webtree.Node{}
-	for i := 1; i <= level; i++ {
-		for len(queue) > 0 {
-			node := queue[0]
-			queue = queue[1:]
-			for _, link := range links {
-				child := node.AddChild(webtree.Page{})
-				child.Page.SetUrl(link)
-				nextQueue = append(nextQueue, child)
-			}
+	var f func(w *webtree.Node, level int, maxDepth int)
+	f = func(w *webtree.Node, level int, maxDepth int) {
+		if level >= maxDepth {
+			return
 		}
-		queue, nextQueue = nextQueue, []*webtree.Node{}
+		c.Fetch(&w.Page)
+		links := c.ExtractLinks(&w.Page)
+		for _, link := range links {
+			child := w.AddChild(webtree.Page{})
+			child.Page.SetUrl(link)
+			f(child, level+1, maxDepth)
+		}
 	}
+	f(w, 1, level)
 }
