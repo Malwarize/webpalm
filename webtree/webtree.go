@@ -38,18 +38,18 @@ type Node struct {
 	Children []*Node
 }
 
-func (parent *Node) AddChild(page Page) *Node {
-	child := &Node{Page: page, Parent: parent}
-	parent.Children = append(parent.Children, child)
+func (node *Node) AddChild(page Page) *Node {
+	child := &Node{Page: page, Parent: node}
+	node.Children = append(node.Children, child)
 	return child
 }
 
-func (parent *Node) AddChildren(pages []Page) {
+func (node *Node) AddChildren(pages []Page) {
 	for _, page := range pages {
-		parent.AddChild(page)
+		node.AddChild(page)
 	}
 }
-func PrintTree(node *Node, prefix string, isLast bool) {
+func (node *Node) printTree(prefix string, isLast bool) {
 	var marker string
 	if isLast {
 		marker = "└─ "
@@ -71,9 +71,9 @@ func PrintTree(node *Node, prefix string, isLast bool) {
 		} else {
 			subPrefix = prefix + "│  "
 		}
-		PrintTree(child, subPrefix, isLastChild)
+		child.printTree(subPrefix, isLastChild)
 	}
 }
-func (parent *Node) Display() {
-	PrintTree(parent, "", true)
+func (node *Node) Display() {
+	node.printTree("", true)
 }
