@@ -5,7 +5,9 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/XORbit01/webpalm/core"
 	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -41,6 +43,17 @@ to quickly create a Cobra application.`,
 			return
 		}
 		fmt.Println("Level: ", level)
+
+		if level < 1 {
+			fmt.Println("Error: Level should be greater than 0")
+			return
+		}
+		if !strings.HasPrefix(url, "http://") && !strings.HasPrefix(url, "https://") {
+			fmt.Println("you didn't specify the protocol, so we will use http")
+			url = "http://" + url
+		}
+		cr := core.NewCrawler(url, level)
+		cr.Crawl()
 	},
 }
 
