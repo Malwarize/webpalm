@@ -7,16 +7,25 @@ import (
 	"os"
 	"regexp"
 	"strings"
+	"sync"
 )
 
 var (
-	GeneralRegex = regexp.MustCompile(`((https?://)?([\da-z.-]+\.[a-z]{2,6}|[\da-z.-]+\.[a-z]{2,6}\.[a-z]{2,6})(/[\w.-]*)*/?)`)
+	GeneralRegex = `((?:https?)://[\w\-]+(?:\.[\w\-]+)+[\w\-\.,@?^=%&:/~\+#]*[\w\-\@?^=%&/~\+#])`
 )
 
 type Crawler struct {
 	RootURL string
 	Level   int
 	Client  *http.Client
+}
+
+func NewCrawler(url string, level int) *Crawler {
+	return &Crawler{
+		RootURL: url,
+		Level:   level,
+		Client:  &http.Client{},
+	}
 }
 
 func (c *Crawler) Crawl() {
@@ -34,6 +43,7 @@ func (c *Crawler) Fetch(page *webtree.Page) {
 			return
 		}
 		page.SetData(string(data))
+		page.SetStatusCode(200)
 		return
 	}
 	req, err := http.NewRequest("GET", page.GetUrl(), nil)
@@ -54,7 +64,8 @@ func (c *Crawler) Fetch(page *webtree.Page) {
 }
 
 func (c *Crawler) ExtractLinks(page *webtree.Page) (links []string) {
-	matches := GeneralRegex.FindAllString(page.GetData(), -1)
+	regex := regexp.MustCompile(GeneralRegex)
+	matches := regex.FindAllString(page.GetData(), -1)
 	for _, link := range matches {
 		links = append(links, link)
 	}
@@ -62,18 +73,38 @@ func (c *Crawler) ExtractLinks(page *webtree.Page) (links []string) {
 }
 
 func (c *Crawler) CrawlNode(w *webtree.Node, level int) {
-	var f func(w *webtree.Node, level int, maxDepth int)
-	f = func(w *webtree.Node, level int, maxDepth int) {
-		if level >= maxDepth {
-			return
-		}
+	if level < 0 {
+		return
+	}
+	//leaf nodes
+	if level == 0 {
 		c.Fetch(&w.Page)
-		links := c.ExtractLinks(&w.Page)
-		for _, link := range links {
+		return
+	}
+	c.Fetch(&w.Page)
+	links := c.ExtractLinks(&w.Page)
+	if w.Page.GetStatusCode() == 0 {
+		return
+	}
+	// add children
+	wg := sync.WaitGroup{}
+	for _, link := range links {
+		wg.Add(1)
+		go func(link string) {
 			child := w.AddChild(webtree.Page{})
 			child.Page.SetUrl(link)
-			f(child, level+1, maxDepth)
-		}
+			defer wg.Done()
+		}(link)
 	}
-	f(w, 1, level)
+	wg.Wait()
+
+	// crawl children
+	for _, child := range w.Children {
+		wg.Add(1)
+		go func(child *webtree.Node, level int) {
+			defer wg.Done()
+			c.CrawlNode(child, level)
+		}(child, level-1)
+	}
+	wg.Wait()
 }
