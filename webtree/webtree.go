@@ -23,6 +23,17 @@ func (page *Page) SetUrl(url string) {
 func (page *Page) SetData(s string) {
 	page.data = s
 }
+func (page *Page) PrintPageLive(prefix *string, last bool) {
+	fmt.Print(*prefix)
+	if last {
+		fmt.Print("└── ")
+		*prefix += "    "
+	} else {
+		fmt.Print("├── ")
+		*prefix += "│   "
+	}
+	fmt.Printf("%s (%d)\n", page.GetUrl(), page.GetStatusCode())
+}
 
 func (page *Page) GetData() string {
 	return page.data
@@ -50,28 +61,19 @@ func (node *Node) AddChildren(pages []Page) {
 	}
 }
 func (node *Node) printTree(prefix string, isLast bool) {
-	var marker string
+	fmt.Printf("%s", prefix)
 	if isLast {
-		marker = "└─ "
+		fmt.Printf("└── ")
+		prefix += "    "
 	} else {
-		marker = "├─ "
+		fmt.Printf("├── ")
+		prefix += "│   "
 	}
-
-	if node.Page.GetStatusCode() != 0 {
-		fmt.Printf("%s%s%s [%d]\n", prefix, marker, node.Page.url, node.Page.GetStatusCode())
-	} else {
-		fmt.Printf("%s%s%s\n", prefix, marker, node.Page.url)
-	}
+	fmt.Printf("%s (%d)\n", node.Page.GetUrl(), node.Page.GetStatusCode())
 
 	for i, child := range node.Children {
-		isLastChild := i == len(node.Children)-1
-		var subPrefix string
-		if isLastChild {
-			subPrefix = prefix + "   "
-		} else {
-			subPrefix = prefix + "│  "
-		}
-		child.printTree(subPrefix, isLastChild)
+		isLast := i == len(node.Children)-1
+		child.printTree(prefix, isLast)
 	}
 }
 func (node *Node) Display() {

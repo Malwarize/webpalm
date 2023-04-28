@@ -44,6 +44,18 @@ to quickly create a Cobra application.`,
 		}
 		fmt.Println("Level: ", level)
 
+		outputMode, err := cmd.Flags().GetString("mode-output")
+		if err != nil {
+			//help message
+			fmt.Println("Error: ", err)
+			return
+		}
+		if outputMode != "live" && outputMode != "block" {
+			fmt.Println("Error: Output mode should be either live or block")
+			return
+		}
+		fmt.Println("Output Mode: ", outputMode)
+
 		if level < 1 {
 			fmt.Println("Error: Level should be greater than 0")
 			return
@@ -52,7 +64,7 @@ to quickly create a Cobra application.`,
 			fmt.Println("you didn't specify the protocol, so we will use http")
 			url = "http://" + url
 		}
-		cr := core.NewCrawler(url, level)
+		cr := core.NewCrawler(url, level, outputMode)
 		cr.Crawl()
 	},
 }
@@ -68,4 +80,7 @@ func init() {
 	rootCmd.Flags().StringP("url", "u", "", "URL to the website")
 
 	rootCmd.Flags().IntP("level", "l", 1, "Level of the website to crawl")
+
+	rootCmd.Flags().StringP("mode-output", "m", "block", "Output mode: live, block ")
+
 }
