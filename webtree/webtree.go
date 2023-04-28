@@ -1,47 +1,8 @@
 package webtree
 
-import "fmt"
-
-type Page struct {
-	url        string
-	statusCode int
-	data       string
-}
-
-func (page *Page) GetUrl() string {
-	return page.url
-}
-func (page *Page) GetStatusCode() int {
-	return page.statusCode
-}
-func (page *Page) SetStatusCode(code int) {
-	page.statusCode = code
-}
-func (page *Page) SetUrl(url string) {
-	page.url = url
-}
-func (page *Page) SetData(s string) {
-	page.data = s
-}
-func (page *Page) PrintPageLive(prefix *string, last bool) {
-	fmt.Print(*prefix)
-	if last {
-		fmt.Print("└── ")
-		*prefix += "    "
-	} else {
-		fmt.Print("├── ")
-		*prefix += "│   "
-	}
-	fmt.Printf("%s (%d)\n", page.GetUrl(), page.GetStatusCode())
-}
-
-func (page *Page) GetData() string {
-	return page.data
-}
-
-func (page *Page) Display() {
-	println(page.GetUrl())
-}
+import (
+	"fmt"
+)
 
 type Node struct {
 	Page     Page
@@ -49,33 +10,64 @@ type Node struct {
 	Children []*Node
 }
 
-func (node *Node) AddChild(page Page) *Node {
-	child := &Node{Page: page, Parent: node}
+func (node *Node) AddChild(page *Page) *Node {
+	child := &Node{Page: *page, Parent: node}
 	node.Children = append(node.Children, child)
 	return child
 }
 
-func (node *Node) AddChildren(pages []Page) {
-	for _, page := range pages {
-		node.AddChild(page)
-	}
+func (node *Node) SprintJSON() ([]byte, error) {
+	return node.ToJSONPage().SprintJSON()
 }
-func (node *Node) printTree(prefix string, isLast bool) {
-	fmt.Printf("%s", prefix)
-	if isLast {
-		fmt.Printf("└── ")
-		prefix += "    "
-	} else {
-		fmt.Printf("├── ")
-		prefix += "│   "
+func (node *Node) SprintTXT() (string, error) {
+	var out string = ""
+	var f func(node *Node, prefix string, isLast bool)
+	f = func(node *Node, prefix string, isLast bool) {
+		out += node.Page.SprintPageLine(&prefix, isLast)
+		for i, child := range node.Children {
+			isLast := i == len(node.Children)-1
+			f(child, prefix, isLast)
+		}
 	}
-	fmt.Printf("%s (%d)\n", node.Page.GetUrl(), node.Page.GetStatusCode())
+	f(node, "", true)
+	return out, nil
+}
+func (node *Node) SprintXML() ([]byte, error) {
+	return node.ToXMLPage().SprintXML()
+}
 
-	for i, child := range node.Children {
-		isLast := i == len(node.Children)-1
-		child.printTree(prefix, isLast)
+func (node *Node) ToJSONPage() *JsonPage {
+	exportNode := NewJsonPage()
+	exportNode.URL = node.Page.GetUrl()
+	exportNode.StatusCode = node.Page.GetStatusCode()
+	for name, results := range node.Page.GetResults() {
+		for _, result := range results {
+			exportNode.Results[name] = append(exportNode.Results[name], result)
+		}
 	}
+	exportNode.Children = make([]*JsonPage, 0)
+	for _, child := range node.Children {
+		exportNode.Children = append(exportNode.Children, child.ToJSONPage())
+	}
+	return exportNode
 }
+
+func (node *Node) ToXMLPage() *XmlPage {
+	exportNode := NewXmlPage()
+	exportNode.URL = node.Page.GetUrl()
+	exportNode.StatusCode = node.Page.GetStatusCode()
+	for name, results := range node.Page.GetResults() {
+		for _, result := range results {
+			exportNode.Results = append(exportNode.Results, &XmlPageResult{Pattern: name, Result: []string{result}})
+		}
+	}
+	exportNode.Children = make([]*XmlPage, 0)
+	for _, child := range node.Children {
+		exportNode.Children = append(exportNode.Children, child.ToXMLPage())
+	}
+	return exportNode
+}
+
 func (node *Node) Display() {
-	node.printTree("", true)
+	fmt.Println(node.SprintTXT())
 }

@@ -11,7 +11,12 @@ func TestCrawler_Crawl(t *testing.T) {
 		RootURL:    "file://arabian_nights.html",
 		Level:      2,
 		Client:     &http.Client{},
-		OutputMode: "live",
+		LiveMode:   true,
+		ExportFile: "test.xml",
+		RegexMap: map[string]string{
+			"email":    "[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+",
+			"comments": "<!--.*?-->",
+		},
 	}
 	crawler.Crawl()
 }

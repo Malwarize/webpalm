@@ -17,18 +17,24 @@ var (
 )
 
 type Crawler struct {
-	RootURL    string
-	Level      int
-	OutputMode string
-	Client     *http.Client
+	RootURL        string
+	Level          int
+	LiveMode       bool
+	ExportFile     string
+	RegexMap       map[string]string
+	ExcludedStatus []int
+	Client         *http.Client
 }
 
-func NewCrawler(url string, level int, outputMode string) *Crawler {
+func NewCrawler(url string, level int, liveMode bool, exportFile string, regexMap map[string]string, statusResponses []int) *Crawler {
 	return &Crawler{
-		RootURL:    url,
-		Level:      level,
-		OutputMode: outputMode,
-		Client:     &http.Client{},
+		RootURL:        url,
+		Level:          level,
+		LiveMode:       liveMode,
+		ExportFile:     exportFile,
+		RegexMap:       regexMap,
+		ExcludedStatus: statusResponses,
+		Client:         &http.Client{},
 	}
 }
 
@@ -76,10 +82,21 @@ func (c *Crawler) CrawlNodeBlock(w *webtree.Node) {
 			return
 		}
 		c.Fetch(&w.Page)
+		// add matches
+		func() {
+			for rname, regex := range c.RegexMap {
+				r := regexp.MustCompile(regex)
+				matches := r.FindAllString(w.Page.GetData(), -1)
+				for _, match := range matches {
+					w.Page.AddMatch(rname, match)
+				}
+			}
+		}()
 		if level == 0 {
 			return
 		}
 		links := c.ExtractLinks(&w.Page)
+
 		if w.Page.GetStatusCode() == 0 {
 			return
 		}
@@ -88,7 +105,7 @@ func (c *Crawler) CrawlNodeBlock(w *webtree.Node) {
 		for _, link := range links {
 			wg.Add(1)
 			go func(link string) {
-				child := w.AddChild(webtree.Page{})
+				child := w.AddChild(webtree.NewPage())
 				child.Page.SetUrl(link)
 				f(child, level-1)
 				defer wg.Done()
@@ -106,19 +123,36 @@ func (c *Crawler) CrawlNodeLive(w *webtree.Node) {
 			return
 		}
 		c.Fetch(&w.Page)
-
+		func() {
+			for rname, regex := range c.RegexMap {
+				r := regexp.MustCompile(regex)
+				matches := r.FindAllString(w.Page.GetData(), -1)
+				for _, match := range matches {
+					w.Page.AddMatch(rname, match)
+				}
+			}
+		}()
 		w.Page.PrintPageLive(&prefix, last)
 		//leaf nodes
 		if level == 0 {
 			return
 		}
 		links := c.ExtractLinks(&w.Page)
-		if w.Page.GetStatusCode() == 0 {
+		isIn := func(status int, arr []int) bool {
+			for _, v := range arr {
+				if v == status {
+					return true
+				}
+			}
+			return false
+		}
+		if isIn(w.Page.GetStatusCode(), c.ExcludedStatus) || w.Page.GetStatusCode() == 0 {
 			return
 		}
+
 		// add children
 		for i, link := range links {
-			child := w.AddChild(webtree.Page{})
+			child := w.AddChild(webtree.NewPage())
 			child.Page.SetUrl(link)
 			f(child, level-1, prefix, i == len(links)-1)
 		}
@@ -126,20 +160,94 @@ func (c *Crawler) CrawlNodeLive(w *webtree.Node) {
 	f(w, c.Level, "", true)
 }
 
+func (c *Crawler) ExportJSON(root webtree.Node, filename string) error {
+	data, err := root.SprintJSON()
+	if err != nil {
+		return err
+	}
+	err = os.WriteFile(filename, data, 0644)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *Crawler) ExportTXT(root webtree.Node, filename string) error {
+	data, err := root.SprintTXT()
+	if err != nil {
+		return err
+	}
+	err = os.WriteFile(filename, []byte(data), 0644)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *Crawler) ExportXML(tree webtree.Node, filename string) error {
+	data, err := tree.SprintXML()
+	if err != nil {
+		return err
+	}
+	err = os.WriteFile(filename, data, 0644)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *Crawler) Export(tree webtree.Node, format string, filename string) error {
+	if format == "json" {
+		err := c.ExportJSON(tree, filename)
+		if err != nil {
+			return err
+		}
+	}
+	if format == "txt" {
+		err := c.ExportTXT(tree, filename)
+		if err != nil {
+			return err
+		}
+	}
+	if format == "xml" {
+		err := c.ExportXML(tree, filename)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (c *Crawler) Crawl() {
 	root := webtree.Node{}
 	root.Page.SetUrl(c.RootURL)
 	// live mode or block mode
-	if c.OutputMode == "live" {
-		now := time.Now()
+	now := time.Now()
+	if c.LiveMode {
 		c.CrawlNodeLive(&root)
-		fmt.Println("took : ", time.Since(now))
-	} else if c.OutputMode == "block" {
-		now := time.Now()
+	} else {
 		c.CrawlNodeBlock(&root)
 		root.Display()
-		fmt.Println("took : ", time.Since(now))
-	} else {
+	}
+	fmt.Println("took : ", time.Since(now))
 
+	if c.ExportFile != "" {
+		if strings.HasSuffix(c.ExportFile, ".txt") {
+			err := c.Export(root, "txt", c.ExportFile)
+			if err != nil {
+				fmt.Println(err)
+			}
+		} else if strings.HasSuffix(c.ExportFile, ".xml") {
+			err := c.Export(root, "xml", c.ExportFile)
+			if err != nil {
+				fmt.Println(err)
+			}
+		} else {
+			//default to json
+			err := c.Export(root, "json", c.ExportFile)
+			if err != nil {
+				fmt.Println(err)
+			}
+		}
 	}
 }

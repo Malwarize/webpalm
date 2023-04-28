@@ -1,6 +1,3 @@
-/*
-Copyright © 2023 NAME HERE <EMAIL ADDRESS>
-*/
 package cmd
 
 import (
@@ -26,10 +23,6 @@ to quickly create a Cobra application.`,
 	// Run: func(cmd *cobra.Command, args []string) { },
 	Run: func(cmd *cobra.Command, args []string) {
 		url, err := cmd.Flags().GetString("url")
-		if url == "" {
-			fmt.Println("Error: URL is required")
-			return
-		}
 		if err != nil {
 			//help message
 			fmt.Println("Error: ", err)
@@ -44,17 +37,13 @@ to quickly create a Cobra application.`,
 		}
 		fmt.Println("Level: ", level)
 
-		outputMode, err := cmd.Flags().GetString("mode-output")
+		liveMode, err := cmd.Flags().GetBool("live")
 		if err != nil {
 			//help message
 			fmt.Println("Error: ", err)
 			return
 		}
-		if outputMode != "live" && outputMode != "block" {
-			fmt.Println("Error: Output mode should be either live or block")
-			return
-		}
-		fmt.Println("Output Mode: ", outputMode)
+		fmt.Println("Is live mode: ", liveMode)
 
 		if level < 1 {
 			fmt.Println("Error: Level should be greater than 0")
@@ -64,7 +53,26 @@ to quickly create a Cobra application.`,
 			fmt.Println("you didn't specify the protocol, so we will use http")
 			url = "http://" + url
 		}
-		cr := core.NewCrawler(url, level, outputMode)
+		exportFile, err := cmd.Flags().GetString("output")
+		fmt.Println("Export File: ", exportFile)
+		if err != nil {
+			fmt.Println("Error: ", err)
+			return
+		}
+		regexMap, err := cmd.Flags().GetStringToString("regexes")
+		if err != nil {
+			fmt.Println("Error: ", err)
+			return
+		}
+		fmt.Println("Regex List: ", regexMap)
+
+		excludedStatus, err := cmd.Flags().GetIntSlice("exclude-code")
+		if err != nil {
+			fmt.Println("Error: ", err)
+			return
+		}
+		fmt.Println("Status Code List: ", excludedStatus)
+		cr := core.NewCrawler(url, level, liveMode, exportFile, regexMap, excludedStatus)
 		cr.Crawl()
 	},
 }
@@ -78,9 +86,17 @@ func Execute() {
 
 func init() {
 	rootCmd.Flags().StringP("url", "u", "", "URL to the website")
-
+	err := rootCmd.MarkFlagRequired("url")
+	if err != nil {
+		return
+	}
 	rootCmd.Flags().IntP("level", "l", 1, "Level of the website to crawl")
 
-	rootCmd.Flags().StringP("mode-output", "m", "block", "Output mode: live, block ")
+	rootCmd.Flags().Bool("live", false, "Live output mode")
 
+	rootCmd.Flags().StringP("output", "o", "", "Output file name")
+
+	rootCmd.Flags().StringToString("regexes", map[string]string{}, "Regexes to match")
+
+	rootCmd.Flags().IntSliceP("exclude-code", "x", []int{}, "Status codes to exclude")
 }
