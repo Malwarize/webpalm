@@ -68,3 +68,42 @@ func long() string {
 	return color.HiBlueString(`webpalm is a command-line tool that extracts palm tree struct and body 
 data pages using regular expressions.`)
 }
+func banner() string {
+	version := color.MagentaString("v0.0.1")
+	author := color.MagentaString("github.com/XORbit01")
+	discord := color.MagentaString("discord.gg/g9y7D3xCab")
+
+	banner := `
+
+      ////    //////
+   ////  /// //    //
+  //  ///////////   /
+  /  //    ##   /// /  WEBPALM
+ // //     ##     / /
+  / /     ###    //
+    /     ###    /
+         ####
+         ####
+        ####
+~~~~~~~~~~~~~~~~~~~~~
+`
+	//color // with hiGreen and # and hiCyan
+	bannerColor := ""
+	for _, c := range banner {
+		if c == '#' {
+			bannerColor += color.YellowString(string(c))
+		} else if c == '~' {
+			bannerColor += color.YellowString(string(c))
+		} else if c == '/' {
+			bannerColor += color.GreenString(string(c))
+		} else {
+			bannerColor += string(c)
+		}
+	}
+
+	bannerColor += color.HiBlueString("webpalm ") + version + "\n"
+	bannerColor += color.HiBlueString("author: ") + author + "\n"
+	bannerColor += color.HiBlueString("discord: ") + discord + "\n"
+	bannerColor += "\n"
+	return bannerColor
+}
