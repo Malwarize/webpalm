@@ -20,19 +20,24 @@ func example() string {
 }
 
 func regexestable() string {
-	return color.RedString(`
- Regex Examples:
-
-  +-----------------+------------------------------------------------------+
-  |    Name         |                         Pattern                      |
-  +-----------------+------------------------------------------------------+
-  |    Email        |    ([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)  |
-  |    Comment      |                \<\!--.*?-->                          |
-  |    10 Numbers   |                \b\d{1,10}\b                          |
-  |    Token        |          \b[A-Za-z]+\w*(?=\s|$)                      |
-  |    password     |                 password.*$                          |
-  +-----------------+------------------------------------------------------+
-`)
+	table := `
+                    |                   Pattern
+      --------------+----------------------------------------------------
+       Email        |    ([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)  
+       Comment      |                \<\!--.*?-->                          
+       10 Numbers   |                \b\d{1,10}\b                          
+       Token        |          \b[A-Za-z]+\w*(?=\s|$)                      
+       password     |                 password.*$                          
+ `
+	coloredTable := ""
+	for _, c := range table {
+		if c == '|' || c == '+' || c == '-' {
+			coloredTable += color.YellowString(string(c))
+		} else {
+			coloredTable += string(c)
+		}
+	}
+	return coloredTable
 }
 
 func options(url string, level int, liveMode bool, exportFile string, regexMap map[string]string, statusResponses []int) string {
@@ -65,8 +70,9 @@ func usage() string {
 }
 
 func long() string {
-	return color.HiBlueString(`webpalm is a command-line tool that extracts palm tree struct and body 
-data pages using regular expressions.`)
+	return color.HiBlueString(`webpalm is a command-line tool that generates a
+palm tree struct of web urls and dump data from
+body pages using regular expressions.`)
 }
 func banner() string {
 	version := color.MagentaString("v0.0.1")
@@ -85,7 +91,7 @@ func banner() string {
          ####
          ####
         ####
-~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 `
 	//color // with hiGreen and # and hiCyan
 	bannerColor := ""
@@ -101,9 +107,10 @@ func banner() string {
 		}
 	}
 
-	bannerColor += color.HiBlueString("webpalm ") + version + "\n"
-	bannerColor += color.HiBlueString("author: ") + author + "\n"
-	bannerColor += color.HiBlueString("discord: ") + discord + "\n"
+	bannerColor += color.HiCyanString("$ webpalm ") + version + "\n"
+	bannerColor += color.HiCyanString("$ author ") + author + "\n"
+	bannerColor += color.HiCyanString("$ discord ") + discord + "\n"
+	bannerColor += color.YellowString("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 	bannerColor += "\n"
 	return bannerColor
 }
