@@ -9,7 +9,6 @@ import (
 	"regexp"
 	"strings"
 	"sync"
-	"time"
 )
 
 var (
@@ -92,6 +91,19 @@ func (c *Crawler) CrawlNodeBlock(w *webtree.Node) {
 				}
 			}
 		}()
+
+		isIn := func(status int, arr []int) bool {
+			for _, v := range arr {
+				if v == status {
+					return true
+				}
+			}
+			return false
+		}
+		if isIn(w.Page.GetStatusCode(), c.ExcludedStatus) || w.Page.GetStatusCode() == 0 {
+			return
+		}
+
 		if level == 0 {
 			return
 		}
@@ -132,12 +144,6 @@ func (c *Crawler) CrawlNodeLive(w *webtree.Node) {
 				}
 			}
 		}()
-		w.Page.PrintPageLive(&prefix, last)
-		//leaf nodes
-		if level == 0 {
-			return
-		}
-		links := c.ExtractLinks(&w.Page)
 		isIn := func(status int, arr []int) bool {
 			for _, v := range arr {
 				if v == status {
@@ -149,6 +155,12 @@ func (c *Crawler) CrawlNodeLive(w *webtree.Node) {
 		if isIn(w.Page.GetStatusCode(), c.ExcludedStatus) || w.Page.GetStatusCode() == 0 {
 			return
 		}
+		w.Page.PrintPageLive(&prefix, last)
+		//leaf nodes
+		if level == 0 {
+			return
+		}
+		links := c.ExtractLinks(&w.Page)
 
 		// add children
 		for i, link := range links {
@@ -222,15 +234,12 @@ func (c *Crawler) Crawl() {
 	root := webtree.Node{}
 	root.Page.SetUrl(c.RootURL)
 	// live mode or block mode
-	now := time.Now()
 	if c.LiveMode {
 		c.CrawlNodeLive(&root)
 	} else {
 		c.CrawlNodeBlock(&root)
 		root.Display()
 	}
-	fmt.Println("took : ", time.Since(now))
-
 	if c.ExportFile != "" {
 		if strings.HasSuffix(c.ExportFile, ".txt") {
 			err := c.Export(root, "txt", c.ExportFile)

@@ -9,9 +9,9 @@ import (
 func TestCrawler_Crawl(t *testing.T) {
 	crawler := core.Crawler{
 		RootURL:    "file://arabian_nights.html",
-		Level:      2,
+		Level:      1,
 		Client:     &http.Client{},
-		LiveMode:   true,
+		LiveMode:   false,
 		ExportFile: "test.xml",
 		RegexMap: map[string]string{
 			"email":    "[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+",

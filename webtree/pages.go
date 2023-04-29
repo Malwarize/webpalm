@@ -125,8 +125,6 @@ func (page *Page) SprintPageLineColored(prefix *string, last bool) string {
 	}
 	return out
 }
-
-// not colored
 func (page *Page) SprintPageLine(prefix *string, last bool) string {
 	out := fmt.Sprint(*prefix)
 	if last {

@@ -32,6 +32,19 @@ func (node *Node) SprintTXT() (string, error) {
 	f(node, "", true)
 	return out, nil
 }
+func (node *Node) SprintTXTColored() (string, error) {
+	var out string = ""
+	var f func(node *Node, prefix string, isLast bool)
+	f = func(node *Node, prefix string, isLast bool) {
+		out += node.Page.SprintPageLineColored(&prefix, isLast)
+		for i, child := range node.Children {
+			isLast := i == len(node.Children)-1
+			f(child, prefix, isLast)
+		}
+	}
+	f(node, "", true)
+	return out, nil
+}
 func (node *Node) SprintXML() ([]byte, error) {
 	return node.ToXMLPage().SprintXML()
 }
@@ -69,5 +82,10 @@ func (node *Node) ToXMLPage() *XmlPage {
 }
 
 func (node *Node) Display() {
-	fmt.Println(node.SprintTXT())
+	out, err := node.SprintTXTColored()
+	if err != nil {
+		fmt.Println(out)
+		return
+	}
+	fmt.Print(out)
 }
