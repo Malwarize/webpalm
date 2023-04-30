@@ -4,7 +4,7 @@
    
 </p>
 
-<h1 align="center"> Watch the web network as palm tree  </h1>
+<h1 align="center"> Watch the web network as a palm tree  </h1>
 
 # Take a look 
 [![asciicast](https://asciinema.org/a/iurNVvgy6e43gfIC6iJUIILm1.svg)](https://asciinema.org/a/iurNVvgy6e43gfIC6iJUIILm1)
