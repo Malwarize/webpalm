@@ -87,12 +87,12 @@ webpalm -u https://google.com -l2 -o result.txt
 ```
 
 ## Regexes Examples
-| Regex | Pattern                                        |
-|-------|------------------------------------------------|
+| Regex | Pattern                             |
+|-------|-------------------------------------|
 |emails | ([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+) |
-|comments | \\<\\!--.*?-->                                 |
-|tokens | [a-zA-Z0-9]{32}                                |
-|password| password.*$                                    |
+|comments | \\<\\!--.*?-->                      |
+|tokens | [a-zA-Z0-9]{32}                     |
+|password| \bpassword\b.{0,10}                                    |
 
 Don't forget escaping the regexes if needed
 
