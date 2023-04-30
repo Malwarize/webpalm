@@ -34,7 +34,7 @@ it is good at spidering in websites networks and go in depth
 ### Installation
 #### From source
 ```bash
-git clone git@github.com:XORbit01/webpalm.git
+git clone https://github.com/XORbit01/webpalm.git
 cd webpalm
 go build -o webpalm && ./webpalm
 ```
