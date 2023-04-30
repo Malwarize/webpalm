@@ -1,4 +1,12 @@
 # webpalm
+<p align="center">
+    <img height=400px width=400px src="https://user-images.githubusercontent.com/130087473/235353083-fbcd866f-6728-4845-80e0-af9b16c000eb.png" alt="Material Bread logo">
+   
+</p>
+
+<h1 align="center"> Watch the web network as palm tree  </h1>
+
+# Take a look 
 [![asciicast](https://asciinema.org/a/iurNVvgy6e43gfIC6iJUIILm1.svg)](https://asciinema.org/a/iurNVvgy6e43gfIC6iJUIILm1)
 ## What is webpalm?
 webpalm is a command-line tool that traverses a website and generates a tree of all the webpages and their links, additionally it can dump data from the body of the pages using regular expressions then store the result in a file.
