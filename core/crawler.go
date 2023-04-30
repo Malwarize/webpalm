@@ -3,12 +3,15 @@ package core
 import (
 	"fmt"
 	"github.com/XORbit01/webpalm/webtree"
+	"github.com/briandowns/spinner"
+	"github.com/fatih/color"
 	"io"
 	"net/http"
 	"os"
 	"regexp"
 	"strings"
 	"sync"
+	"time"
 )
 
 var (
@@ -237,7 +240,15 @@ func (c *Crawler) Crawl() {
 	if c.LiveMode {
 		c.CrawlNodeLive(&root)
 	} else {
+		var s *spinner.Spinner
+		func(s **spinner.Spinner) {
+			*s = spinner.New(spinner.CharSets[9], 100*time.Millisecond)
+			(*s).Prefix = color.GreenString("incursion ... ")
+			(*s).Start()
+			_ = (*s).Color("yellow")
+		}(&s)
 		c.CrawlNodeBlock(&root)
+		s.Stop()
 		root.Display()
 	}
 	if c.ExportFile != "" {
