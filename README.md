@@ -59,10 +59,11 @@ webpalm -h
 Flags:
   -x, --exclude-code ints        status codes to exclude / ex : -x 404,500
   -h, --help                     help for webpalm
+  -i, --include strings          include only domains / ex : -i google.com,facebook.com
   -l, --level int                level of palming / ex: -l 2
       --live                     live output mode (slow but live streaming) / ex: --live
   -o, --output string            file to export the result (f.json, f.xml, f.txt) / ex: -o result.json
-      --regexes stringToString   regexes to match in each page / ex: --regexes comments="<--.*?-->" (default [])
+      --regexes stringToString   regexes to match in each page / ex: --regexes comments="\<\!--.*?-->  (default [])
   -u, --url string               target url / ex: -u https://google.com
 ```
 ### Examples
