@@ -96,6 +96,12 @@ webpalm -u https://google.com -l3 -o result.xml
 webpalm -u https://google.com -l2 -o result.txt
 ```
 
+#### get the palm tree of a website and include only some domains: 
+```bash
+webpalm -u https://google.com -l2 -i google.com,facebook.com
+```
+this will crawl only the urls that contains google.com or facebook.com
+
 ## Regexes Examples
 | Regex | Pattern                             |
 |-------|-------------------------------------|

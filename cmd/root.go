@@ -107,13 +107,13 @@ func init() {
 	if err != nil {
 		return
 	}
-	rootCmd.Flags().IntP("level", "l", 0, "level of palming / ex: -l 2")
+	rootCmd.Flags().IntP("level", "l", 0, "level of palming / ex: -l2")
 
 	rootCmd.Flags().Bool("live", false, "live output mode (slow but live streaming) / ex: --live")
 
 	rootCmd.Flags().StringP("output", "o", "", "file to export the result (f.json, f.xml, f.txt) / ex: -o result.json")
 
-	rootCmd.Flags().StringToString("regexes", map[string]string{}, "regexes to match in each page / ex: --regexes comments=\"<--.*?-->\"")
+	rootCmd.Flags().StringToString("regexes", map[string]string{}, "regexes to match in each page / ex: --regexes comments=\"\\<\\!--.*?-->\"")
 
 	rootCmd.Flags().IntSliceP("exclude-code", "x", []int{}, "status codes to exclude / ex : -x 404,500")
 
