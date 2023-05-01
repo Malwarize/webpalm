@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/XORbit01/webpalm/core"
+	"net"
 	"os"
 	"strings"
 
@@ -11,12 +12,14 @@ import (
 
 func isValidDomain(url string) bool {
 	url = strings.ToLower(url)
+	//check if url is an ip address
+	if ip := net.ParseIP(url); ip != nil {
+		return true
+	}
+
 	for _, c := range url {
 		if c == '.' {
 			continue
-		}
-		if c < 'a' || c > 'z' {
-			return false
 		}
 	}
 	subs := strings.Split(url, ".")
