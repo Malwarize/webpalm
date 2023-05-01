@@ -25,10 +25,11 @@ type Crawler struct {
 	ExportFile     string
 	RegexMap       map[string]string
 	ExcludedStatus []int
+	IncludedUrls   []string
 	Client         *http.Client
 }
 
-func NewCrawler(url string, level int, liveMode bool, exportFile string, regexMap map[string]string, statusResponses []int) *Crawler {
+func NewCrawler(url string, level int, liveMode bool, exportFile string, regexMap map[string]string, statusResponses []int, includes []string) *Crawler {
 	return &Crawler{
 		RootURL:        url,
 		Level:          level,
@@ -36,6 +37,7 @@ func NewCrawler(url string, level int, liveMode bool, exportFile string, regexMa
 		ExportFile:     exportFile,
 		RegexMap:       regexMap,
 		ExcludedStatus: statusResponses,
+		IncludedUrls:   includes,
 		Client:         &http.Client{},
 	}
 }
@@ -75,104 +77,6 @@ func (c *Crawler) ExtractLinks(page *webtree.Page) (links []string) {
 		links = append(links, link)
 	}
 	return
-}
-
-func (c *Crawler) CrawlNodeBlock(w *webtree.Node) {
-	var f func(w *webtree.Node, level int)
-	f = func(w *webtree.Node, level int) {
-		if level < 0 {
-			return
-		}
-		c.Fetch(&w.Page)
-		// add matches
-		func() {
-			for rname, regex := range c.RegexMap {
-				r := regexp.MustCompile(regex)
-				matches := r.FindAllString(w.Page.GetData(), -1)
-				for _, match := range matches {
-					w.Page.AddMatch(rname, match)
-				}
-			}
-		}()
-
-		isIn := func(status int, arr []int) bool {
-			for _, v := range arr {
-				if v == status {
-					return true
-				}
-			}
-			return false
-		}
-		if isIn(w.Page.GetStatusCode(), c.ExcludedStatus) || w.Page.GetStatusCode() == 0 {
-			return
-		}
-
-		if level == 0 {
-			return
-		}
-		links := c.ExtractLinks(&w.Page)
-
-		if w.Page.GetStatusCode() == 0 {
-			return
-		}
-		// add children
-		wg := sync.WaitGroup{}
-		for _, link := range links {
-			wg.Add(1)
-			go func(link string) {
-				child := w.AddChild(webtree.NewPage())
-				child.Page.SetUrl(link)
-				f(child, level-1)
-				defer wg.Done()
-			}(link)
-		}
-		wg.Wait()
-	}
-	f(w, c.Level)
-}
-
-func (c *Crawler) CrawlNodeLive(w *webtree.Node) {
-	var f func(w *webtree.Node, level int, prefix string, last bool)
-	f = func(w *webtree.Node, level int, prefix string, last bool) {
-		if level < 0 {
-			return
-		}
-		c.Fetch(&w.Page)
-		func() {
-			for rname, regex := range c.RegexMap {
-				r := regexp.MustCompile(regex)
-				matches := r.FindAllString(w.Page.GetData(), -1)
-				for _, match := range matches {
-					w.Page.AddMatch(rname, match)
-				}
-			}
-		}()
-		isIn := func(status int, arr []int) bool {
-			for _, v := range arr {
-				if v == status {
-					return true
-				}
-			}
-			return false
-		}
-		if isIn(w.Page.GetStatusCode(), c.ExcludedStatus) || w.Page.GetStatusCode() == 0 {
-			return
-		}
-		w.Page.PrintPageLive(&prefix, last)
-		//leaf nodes
-		if level == 0 {
-			return
-		}
-		links := c.ExtractLinks(&w.Page)
-
-		// add children
-		for i, link := range links {
-			child := w.AddChild(webtree.NewPage())
-			child.Page.SetUrl(link)
-			f(child, level-1, prefix, i == len(links)-1)
-		}
-	}
-	f(w, c.Level, "", true)
 }
 
 func (c *Crawler) ExportJSON(root webtree.Node, filename string) error {
@@ -270,4 +174,116 @@ func (c *Crawler) Crawl() {
 			}
 		}
 	}
+}
+
+func (c *Crawler) isSkipableUrl(u string) bool {
+	// get domain name from url
+	if strings.Contains(c.RootURL, u) {
+		return false
+	}
+	if len(c.IncludedUrls) == 0 {
+		return false
+	}
+	for _, v := range c.IncludedUrls {
+		if strings.Contains(u, v) {
+			return false
+		}
+	}
+	return true
+}
+
+func (c *Crawler) IsSkipablePage(page webtree.Page) bool {
+	isInCode := func(status int, arr []int) bool {
+		for _, v := range arr {
+			if v == status {
+				return true
+			}
+		}
+		return false
+	}
+	if page.GetStatusCode() == 0 || isInCode(page.GetStatusCode(), c.ExcludedStatus) || c.isSkipableUrl(page.GetUrl()) {
+		return true
+	}
+	return false
+}
+
+func (c *Crawler) AddMatches(page webtree.Page) {
+	for rname, regex := range c.RegexMap {
+		r := regexp.MustCompile(regex)
+		matches := r.FindAllString(page.GetData(), -1)
+		for _, match := range matches {
+			page.AddMatch(rname, match)
+		}
+	}
+}
+
+func (c *Crawler) CrawlNodeBlock(w *webtree.Node) {
+	var f func(w *webtree.Node, level int)
+	f = func(w *webtree.Node, level int) {
+		if level < 0 {
+			return
+		}
+		c.Fetch(&w.Page)
+		// add matches
+		c.AddMatches(w.Page)
+		if c.IsSkipablePage(w.Page) {
+			return
+		}
+		// leaf node
+		if level == 0 {
+			return
+		}
+		links := c.ExtractLinks(&w.Page)
+		// add children
+		wg := sync.WaitGroup{}
+		for _, link := range links {
+			wg.Add(1)
+			go func(link string) {
+				if c.isSkipableUrl(link) {
+					defer wg.Done()
+					return
+				}
+				child := w.AddChild(webtree.NewPage())
+				child.Page.SetUrl(link)
+				f(child, level-1)
+				defer wg.Done()
+			}(link)
+		}
+		wg.Wait()
+	}
+	f(w, c.Level)
+}
+
+func (c *Crawler) CrawlNodeLive(w *webtree.Node) {
+	var f func(w *webtree.Node, level int, prefix string, last bool)
+	f = func(w *webtree.Node, level int, prefix string, last bool) {
+		if level < 0 {
+			return
+		}
+		c.Fetch(&w.Page)
+		// add matches
+		c.AddMatches(w.Page)
+
+		if c.IsSkipablePage(w.Page) {
+			return
+		}
+		w.Page.PrintPageLive(&prefix, last)
+
+		//leaf nodes
+		if level == 0 {
+			return
+		}
+		links := c.ExtractLinks(&w.Page)
+
+		// add children
+		for i, link := range links {
+			if c.isSkipableUrl(link) {
+				continue
+			}
+			child := w.AddChild(webtree.NewPage())
+			child.Page.SetUrl(link)
+			f(child, level-1, prefix, i == len(links)-1)
+		}
+	}
+	f(w, c.Level, "", true)
 }

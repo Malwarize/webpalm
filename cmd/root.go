@@ -9,6 +9,23 @@ import (
 	"github.com/spf13/cobra"
 )
 
+func isValidDomain(url string) bool {
+	url = strings.ToLower(url)
+	for _, c := range url {
+		if c == '.' {
+			continue
+		}
+		if c < 'a' || c > 'z' {
+			return false
+		}
+	}
+	subs := strings.Split(url, ".")
+	if len(subs) < 2 {
+		return false
+	}
+	return true
+}
+
 var rootCmd = &cobra.Command{
 	Use:   usage(),
 	Short: "A web scraping tool",
@@ -58,8 +75,19 @@ var rootCmd = &cobra.Command{
 			return
 		}
 
-		fmt.Println(options(url, level, liveMode, exportFile, regexMap, excludedStatus))
-		cr := core.NewCrawler(url, level, liveMode, exportFile, regexMap, excludedStatus)
+		includedUrls, err := cmd.Flags().GetStringSlice("include")
+		if err != nil {
+			fmt.Println("Error: ", err)
+			return
+		}
+		for _, include := range includedUrls {
+			if !isValidDomain(include) {
+				fmt.Println("Error: Invalid domain name: ", include)
+				return
+			}
+		}
+		fmt.Println(options(url, level, liveMode, exportFile, regexMap, excludedStatus, includedUrls))
+		cr := core.NewCrawler(url, level, liveMode, exportFile, regexMap, excludedStatus, includedUrls)
 		cr.Crawl()
 	},
 	Example: example() + regexestable(),
@@ -88,4 +116,6 @@ func init() {
 	rootCmd.Flags().StringToString("regexes", map[string]string{}, "regexes to match in each page / ex: --regexes comments=\"<--.*?-->\"")
 
 	rootCmd.Flags().IntSliceP("exclude-code", "x", []int{}, "status codes to exclude / ex : -x 404,500")
+
+	rootCmd.Flags().StringSliceP("include", "i", []string{}, "include only domains / ex : -i google.com,facebook.com")
 }

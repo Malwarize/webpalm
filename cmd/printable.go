@@ -40,7 +40,7 @@ func regexestable() string {
 	return coloredTable
 }
 
-func options(url string, level int, liveMode bool, exportFile string, regexMap map[string]string, statusResponses []int) string {
+func options(url string, level int, liveMode bool, exportFile string, regexMap map[string]string, statusResponses []int, includedUrls []string) string {
 	var options string
 	//wrap it into big square
 	options += color.RedString("┌")
@@ -52,7 +52,7 @@ func options(url string, level int, liveMode bool, exportFile string, regexMap m
 	options += color.RedString("│")
 	options += color.BlueString("Live Mode: ") + color.CyanString("%t", liveMode) + "\n"
 	options += color.RedString("│")
-	options += color.BlueString("Export File: ") + color.CyanString(exportFile) + "\n"
+	options += color.BlueString("Export to: ") + color.CyanString(exportFile) + "\n"
 	options += color.RedString("│")
 	options += color.BlueString("Regexes: ") + "\n"
 	for k, v := range regexMap {
@@ -60,7 +60,21 @@ func options(url string, level int, liveMode bool, exportFile string, regexMap m
 		options += color.CyanString("  %s: %s\n", k, v)
 	}
 	options += color.RedString("│")
-	options += color.BlueString("Excluded Status: ") + color.CyanString("%v", statusResponses) + "\n"
+	options += color.BlueString("Crawl Only : ") + "\n"
+	if len(includedUrls) == 0 {
+		options += color.RedString("│")
+		options += color.CyanString("  %s\n", "all")
+	}
+	for _, v := range includedUrls {
+		options += color.RedString("│")
+		options += color.CyanString("  %s\n", v)
+	}
+	options += color.RedString("│")
+	if len(statusResponses) == 0 {
+		options += color.BlueString("Excluded Status: ") + color.CyanString("%s", "nothing") + "\n"
+	} else {
+		options += color.BlueString("Excluded Status: ") + color.CyanString("%v", statusResponses) + "\n"
+	}
 	options += color.RedString("└")
 	return options
 }
@@ -74,6 +88,7 @@ func long() string {
 palm tree struct of web urls and dump data from
 body pages using regular expressions.`)
 }
+
 func banner() string {
 	version := color.MagentaString("v0.0.1")
 	author := color.MagentaString("github.com/XORbit01")
