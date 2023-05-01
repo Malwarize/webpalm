@@ -52,9 +52,17 @@ func options(url string, level int, liveMode bool, exportFile string, regexMap m
 	options += color.RedString("│")
 	options += color.BlueString("Live Mode: ") + color.CyanString("%t", liveMode) + "\n"
 	options += color.RedString("│")
-	options += color.BlueString("Export to: ") + color.CyanString(exportFile) + "\n"
+	if exportFile == "" {
+		options += color.BlueString("Export to: ") + color.CyanString("%s", "nothing") + "\n"
+	} else {
+		options += color.BlueString("Export to: ") + color.CyanString(exportFile) + "\n"
+	}
 	options += color.RedString("│")
 	options += color.BlueString("Regexes: ") + "\n"
+	if len(regexMap) == 0 {
+		options += color.RedString("│")
+		options += color.CyanString("  %s\n", "nothing")
+	}
 	for k, v := range regexMap {
 		options += color.RedString("│")
 		options += color.CyanString("  %s: %s\n", k, v)
