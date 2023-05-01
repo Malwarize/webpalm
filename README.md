@@ -1,10 +1,8 @@
 # webpalm
-<p align="center">
-    <img height=400px width=400px src="https://user-images.githubusercontent.com/130087473/235353083-fbcd866f-6728-4845-80e0-af9b16c000eb.png" alt="Material Bread logo">
-   
-</p>
 
-<h1 align="center"> Watch the web network as a palm tree  </h1>
+![banner](https://user-images.githubusercontent.com/130087473/235356807-32b80288-7808-4f66-a6f2-fcbe7ab34b72.png)
+
+<hr>
 </br>
 </br>
 </br>
@@ -36,7 +34,7 @@ it is good at spidering in websites networks and go in depth
 ### Installation
 #### From source
 ```bash
-git clone git@github.com:XORbit01/webpalm.git
+git clone https://github.com/XORbit01/webpalm.git
 cd webpalm
 go build -o webpalm && ./webpalm
 ```
