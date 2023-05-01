@@ -3,9 +3,8 @@
 ![banner](https://user-images.githubusercontent.com/130087473/235356807-32b80288-7808-4f66-a6f2-fcbe7ab34b72.png)
 
 <hr>
-</br>
-</br>
-</br>
+<br></br>
+<br></br>
 
 # Take a look 
 [![asciicast](https://asciinema.org/a/Ta9V68iidfWD0DSq2J49H6Ipb.svg)](https://asciinema.org/a/Ta9V68iidfWD0DSq2J49H6Ipb)
