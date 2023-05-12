@@ -8,9 +8,11 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"os/signal"
 	"regexp"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 )
 
@@ -249,9 +251,43 @@ func (c *Crawler) CrawlNodeLive(w *webtree.Node) {
 	f(w, c.Level, "", true)
 }
 
+func (c *Crawler) SaveResults(root webtree.Node) {
+	if strings.HasSuffix(c.ExportFile, ".txt") {
+		err := c.Export(root, "txt", c.ExportFile)
+		if err != nil {
+			fmt.Println(err)
+		}
+	} else if strings.HasSuffix(c.ExportFile, ".xml") {
+		err := c.Export(root, "xml", c.ExportFile)
+		if err != nil {
+			fmt.Println(err)
+		}
+	} else {
+		err := c.Export(root, "json", c.ExportFile)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
+}
+
 func (c *Crawler) Crawl() {
 	root := webtree.Node{}
 	root.Page.SetUrl(c.RootURL)
+	interruptChan := make(chan os.Signal, 1)
+	signal.Notify(interruptChan, syscall.SIGINT, syscall.SIGTERM)
+	go func() {
+		<-interruptChan
+		fmt.Println("\033[?25h")
+		if !c.LiveMode {
+			root.Display()
+		}
+		if c.ExportFile != "" {
+			fmt.Println("Saving results to file...")
+			c.SaveResults(root)
+		}
+		os.Exit(0)
+	}()
+
 	// live mode or block mode
 	if c.LiveMode {
 		c.CrawlNodeLive(&root)
@@ -267,23 +303,8 @@ func (c *Crawler) Crawl() {
 		s.Stop()
 		root.Display()
 	}
+	fmt.Println("\033[?25h")
 	if c.ExportFile != "" {
-		if strings.HasSuffix(c.ExportFile, ".txt") {
-			err := c.Export(root, "txt", c.ExportFile)
-			if err != nil {
-				fmt.Println(err)
-			}
-		} else if strings.HasSuffix(c.ExportFile, ".xml") {
-			err := c.Export(root, "xml", c.ExportFile)
-			if err != nil {
-				fmt.Println(err)
-			}
-		} else {
-			//default to json
-			err := c.Export(root, "json", c.ExportFile)
-			if err != nil {
-				fmt.Println(err)
-			}
-		}
+		c.SaveResults(root)
 	}
 }
