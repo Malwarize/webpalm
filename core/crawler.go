@@ -137,45 +137,6 @@ func (c *Crawler) Export(tree webtree.Node, format string, filename string) erro
 	return nil
 }
 
-func (c *Crawler) Crawl() {
-	root := webtree.Node{}
-	root.Page.SetUrl(c.RootURL)
-	// live mode or block mode
-	if c.LiveMode {
-		c.CrawlNodeLive(&root)
-	} else {
-		var s *spinner.Spinner
-		func(s **spinner.Spinner) {
-			*s = spinner.New(spinner.CharSets[9], 100*time.Millisecond)
-			(*s).Prefix = color.GreenString("incursion ... ")
-			(*s).Start()
-			_ = (*s).Color("yellow")
-		}(&s)
-		c.CrawlNodeBlock(&root)
-		s.Stop()
-		root.Display()
-	}
-	if c.ExportFile != "" {
-		if strings.HasSuffix(c.ExportFile, ".txt") {
-			err := c.Export(root, "txt", c.ExportFile)
-			if err != nil {
-				fmt.Println(err)
-			}
-		} else if strings.HasSuffix(c.ExportFile, ".xml") {
-			err := c.Export(root, "xml", c.ExportFile)
-			if err != nil {
-				fmt.Println(err)
-			}
-		} else {
-			//default to json
-			err := c.Export(root, "json", c.ExportFile)
-			if err != nil {
-				fmt.Println(err)
-			}
-		}
-	}
-}
-
 func (c *Crawler) isSkipableUrl(u string) bool {
 	// get domain name from url
 	if strings.Contains(c.RootURL, u) {
@@ -286,4 +247,43 @@ func (c *Crawler) CrawlNodeLive(w *webtree.Node) {
 		}
 	}
 	f(w, c.Level, "", true)
+}
+
+func (c *Crawler) Crawl() {
+	root := webtree.Node{}
+	root.Page.SetUrl(c.RootURL)
+	// live mode or block mode
+	if c.LiveMode {
+		c.CrawlNodeLive(&root)
+	} else {
+		var s *spinner.Spinner
+		func(s **spinner.Spinner) {
+			*s = spinner.New(spinner.CharSets[9], 100*time.Millisecond)
+			(*s).Prefix = color.GreenString("incursion ... ")
+			(*s).Start()
+			_ = (*s).Color("yellow")
+		}(&s)
+		c.CrawlNodeBlock(&root)
+		s.Stop()
+		root.Display()
+	}
+	if c.ExportFile != "" {
+		if strings.HasSuffix(c.ExportFile, ".txt") {
+			err := c.Export(root, "txt", c.ExportFile)
+			if err != nil {
+				fmt.Println(err)
+			}
+		} else if strings.HasSuffix(c.ExportFile, ".xml") {
+			err := c.Export(root, "xml", c.ExportFile)
+			if err != nil {
+				fmt.Println(err)
+			}
+		} else {
+			//default to json
+			err := c.Export(root, "json", c.ExportFile)
+			if err != nil {
+				fmt.Println(err)
+			}
+		}
+	}
 }
