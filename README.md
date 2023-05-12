@@ -25,10 +25,9 @@ and you are responsible for your actions.
 - [x] Colorized output and error handling
 
 ### When to use webpalm?
-web palm is specially used in OSINT level.
-when you want to get a quick overview of a website structure
-or when you want to check if there is any sensitive data using regex
-it is good at spidering in websites networks and go in depth
+WebPalm is a command-line tool that enables users to traverse a website and generate a tree of all its webpages and their links. It uses a recursive approach to enter each link found on a webpage and continues to do so until all levels have been explored.
+In addition to generating a site map, WebPalm can extract data from the body of each page using regular expressions and save the results in a file. This feature can be useful for web scraping or extracting specific information.
+
 
 ### Installation
 #### From source
