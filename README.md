@@ -48,7 +48,7 @@ cd webpalm
 ```
 ### if you have go installed
 ```bash
-go install github.com/XORbit01/webpalm@v0.0.2
+go install github.com/XORbit01/webpalm@latest
 ```
 ### Usage
 ```bash
