@@ -97,9 +97,8 @@ func long() string {
 palm tree struct of web urls and dump data from
 body pages using regular expressions.`)
 }
-
 func banner() string {
-	version := color.MagentaString("v1.0.0")
+	version := color.MagentaString("v1.0.2")
 	author := color.MagentaString("github.com/XORbit01")
 	discord := color.MagentaString("discord.gg/g9y7D3xCab")
 
