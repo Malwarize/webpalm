@@ -2,12 +2,11 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/XORbit01/webpalm/core"
+	"github.com/Malwarize/webpalm/core"
+	"github.com/spf13/cobra"
 	"net"
 	"os"
 	"strings"
-
-	"github.com/spf13/cobra"
 )
 
 func isValidDomain(url string) bool {

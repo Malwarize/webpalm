@@ -2,7 +2,7 @@ package core
 
 import (
 	"fmt"
-	"github.com/XORbit01/webpalm/webtree"
+	"github.com/Malwarize/webpalm/webtree"
 	"github.com/briandowns/spinner"
 	"github.com/fatih/color"
 	"io"
