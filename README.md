@@ -10,7 +10,8 @@
 [![asciicast](https://asciinema.org/a/Ta9V68iidfWD0DSq2J49H6Ipb.svg)](https://asciinema.org/a/Ta9V68iidfWD0DSq2J49H6Ipb)
 
 ## What is webpalm?
-webpalm is a command-line tool that traverses a website and generates a tree of all the webpages and their links, additionally it can dump data from the body of the pages using regular expressions then store the result in a file.
+WebPalm is a command-line tool that enables users to traverse a website and generate a tree of all its webpages and their links. It uses a recursive approach to enter each link found on a webpage and continues to do so until all levels have been explored.
+In addition to generating a site map, WebPalm can extract data from the body of each page using regular expressions and save the results in a file. This feature can be useful for web scraping or extracting specific information.
 
 ### ⚠️ DISCLAIMER ⚠️:
 this tool is intended to be used for legal purposes only,
@@ -23,11 +24,6 @@ and you are responsible for your actions.
 - [x] Export the webtree to json, xml, txt
 - [x] Fast and easy to use
 - [x] Colorized output and error handling
-
-### When to use webpalm?
-WebPalm is a command-line tool that enables users to traverse a website and generate a tree of all its webpages and their links. It uses a recursive approach to enter each link found on a webpage and continues to do so until all levels have been explored.
-In addition to generating a site map, WebPalm can extract data from the body of each page using regular expressions and save the results in a file. This feature can be useful for web scraping or extracting specific information.
-
 
 ### Installation
 #### From source
