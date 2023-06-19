@@ -20,6 +20,30 @@ var (
 	GeneralRegex = `((?:https?)://[\w\-]+(?:\.[\w\-]+)+[\w\-\.,@?^=%&:/~\+#]*[\w\-\@?^=%&/~\+#])`
 )
 
+type Cache struct {
+	Visited map[string]bool
+	Lock    sync.Mutex
+}
+
+func (c *Cache) IsVisited(url string) bool {
+	c.Lock.Lock()
+	defer c.Lock.Unlock()
+	_, ok := c.Visited[url]
+	return ok
+}
+
+func (c *Cache) AddVisited(url string) {
+	c.Lock.Lock()
+	defer c.Lock.Unlock()
+	c.Visited[url] = true
+}
+
+func (c *Cache) Flush() {
+	c.Lock.Lock()
+	defer c.Lock.Unlock()
+	c.Visited = make(map[string]bool)
+}
+
 type Crawler struct {
 	RootURL        string
 	Level          int
@@ -29,6 +53,7 @@ type Crawler struct {
 	ExcludedStatus []int
 	IncludedUrls   []string
 	Client         *http.Client
+	Cache          Cache
 }
 
 func NewCrawler(url string, level int, liveMode bool, exportFile string, regexMap map[string]string, statusResponses []int, includes []string) *Crawler {
@@ -41,6 +66,9 @@ func NewCrawler(url string, level int, liveMode bool, exportFile string, regexMa
 		ExcludedStatus: statusResponses,
 		IncludedUrls:   includes,
 		Client:         &http.Client{},
+		Cache: Cache{
+			Visited: make(map[string]bool),
+		},
 	}
 }
 
@@ -164,7 +192,10 @@ func (c *Crawler) IsSkipablePage(page webtree.Page) bool {
 		}
 		return false
 	}
-	if page.GetStatusCode() == 0 || isInCode(page.GetStatusCode(), c.ExcludedStatus) || c.isSkipableUrl(page.GetUrl()) {
+	if page.GetStatusCode() == 0 ||
+		isInCode(page.GetStatusCode(), c.ExcludedStatus) ||
+		c.isSkipableUrl(page.GetUrl()) ||
+		c.Cache.IsVisited(page.GetUrl()) {
 		return true
 	}
 	return false
@@ -196,6 +227,8 @@ func (c *Crawler) CrawlNodeBlock(w *webtree.Node) {
 		if level == 0 {
 			return
 		}
+		// add to visited node to cache
+		c.Cache.AddVisited(w.Page.GetUrl())
 		links := c.ExtractLinks(&w.Page)
 		// add children
 		wg := sync.WaitGroup{}
@@ -236,6 +269,9 @@ func (c *Crawler) CrawlNodeLive(w *webtree.Node) {
 		if level == 0 {
 			return
 		}
+		// add visited node to cache
+		c.Cache.AddVisited(w.Page.GetUrl())
+
 		links := c.ExtractLinks(&w.Page)
 
 		// add children
