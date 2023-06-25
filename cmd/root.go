@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"bufio"
 	"fmt"
 	"github.com/Malwarize/webpalm/core"
 	"github.com/spf13/cobra"
@@ -28,11 +29,33 @@ func isValidDomain(url string) bool {
 	return true
 }
 
+func getVersion() string {
+	var version string
+	file, err := os.Open("version.txt")
+	if err != nil {
+		version = "v0.0.1"
+	} else {
+		scanner := bufio.NewScanner(file)
+		scanner.Scan()
+		version = scanner.Text()
+	}
+	defer file.Close()
+	return version
+}
+
 var rootCmd = &cobra.Command{
 	Use:   usage(),
 	Short: "A web scraping tool",
 	Long:  long(),
 	Run: func(cmd *cobra.Command, args []string) {
+		showVersion, err := cmd.Flags().GetBool("version")
+		if err != nil {
+			fmt.Println("Error: ", err)
+			return
+		}
+		if showVersion {
+			fmt.Println(getVersion())
+		}
 		url, err := cmd.Flags().GetString("url")
 		if err != nil {
 			//help message
@@ -131,4 +154,7 @@ func init() {
 	rootCmd.Flags().StringSliceP("include", "i", []string{}, "include only domains / ex : -i google.com,facebook.com")
 
 	rootCmd.Flags().IntP("max-concurrency", "m", 1000, "max concurrent tasks / ex: -m 10")
+
+	rootCmd.Flags().BoolP("version", "v", false, "show version")
+
 }
