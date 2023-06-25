@@ -1,7 +1,7 @@
 package tests
 
 import (
-	"github.com/Malwarize/webpalm/core"
+	"github.com/Malwarize/webpalm/v2/core"
 	"net/http"
 	"testing"
 )

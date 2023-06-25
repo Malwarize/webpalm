@@ -3,7 +3,7 @@ package cmd
 import (
 	"bufio"
 	"fmt"
-	"github.com/Malwarize/webpalm/core"
+	"github.com/Malwarize/webpalm/v2/core"
 	"github.com/spf13/cobra"
 	"net"
 	"os"
@@ -48,14 +48,6 @@ var rootCmd = &cobra.Command{
 	Short: "A web scraping tool",
 	Long:  long(),
 	Run: func(cmd *cobra.Command, args []string) {
-		showVersion, err := cmd.Flags().GetBool("version")
-		if err != nil {
-			fmt.Println("Error: ", err)
-			return
-		}
-		if showVersion {
-			fmt.Println(getVersion())
-		}
 		url, err := cmd.Flags().GetString("url")
 		if err != nil {
 			//help message
@@ -155,6 +147,12 @@ func init() {
 
 	rootCmd.Flags().IntP("max-concurrency", "m", 1000, "max concurrent tasks / ex: -m 10")
 
-	rootCmd.Flags().BoolP("version", "v", false, "show version")
-
+	rootCmd.AddCommand(
+		&cobra.Command{
+			Use:   "version",
+			Short: "Print the version number",
+			Run: func(cmd *cobra.Command, args []string) {
+				fmt.Println(getVersion())
+			},
+		})
 }

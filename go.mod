@@ -1,4 +1,4 @@
-module github.com/Malwarize/webpalm
+module github.com/Malwarize/webpalm/v2
 
 go 1.20
 
