@@ -30,9 +30,10 @@ type Crawler struct {
 	IncludedUrls   []string
 	Client         *http.Client
 	Cache          Cache
+	MaxConcurrency int
 }
 
-func NewCrawler(url string, level int, liveMode bool, exportFile string, regexMap map[string]string, statusResponses []int, includes []string) *Crawler {
+func NewCrawler(url string, level int, liveMode bool, exportFile string, regexMap map[string]string, statusResponses []int, includes []string, maxConcurrency int) *Crawler {
 	return &Crawler{
 		RootURL:        url,
 		Level:          level,
@@ -45,6 +46,7 @@ func NewCrawler(url string, level int, liveMode bool, exportFile string, regexMa
 		Cache: Cache{
 			Visited: make(map[string]bool),
 		},
+		MaxConcurrency: maxConcurrency,
 	}
 }
 
@@ -189,23 +191,29 @@ func (c *Crawler) AddMatches(page webtree.Page) {
 
 func (c *Crawler) CrawlNodeBlock(w *webtree.Node) {
 	var f func(w *webtree.Node, level int)
+	semaphore := NewSemaphore(c.MaxConcurrency)
 	f = func(w *webtree.Node, level int) {
+		semaphore.Acquire()
 		if level < 0 {
+			semaphore.Release()
 			return
 		}
 		c.Fetch(&w.Page)
 		// add matches
 		c.AddMatches(w.Page)
 		if c.IsSkipablePage(w.Page) {
+			semaphore.Release()
 			return
 		}
 		// leaf node
 		if level == 0 {
+			semaphore.Release()
 			return
 		}
 		// add to visited node to cache
 		c.Cache.AddVisited(w.Page.GetUrl())
 		links := c.ExtractLinks(&w.Page)
+		semaphore.Release()
 		// add children
 		wg := sync.WaitGroup{}
 		for _, link := range links {
