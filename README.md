@@ -21,7 +21,7 @@ and you are responsible for your actions.
 - [x] Generate a palm tree struct of web urls
 - [x] Dump data from body pages using regular expressions
 - [x] live output mode 
-- [x] Export the webtree to json, xml, txt
+- [x] Export the web-tree to json, xml, txt
 - [x] Fast and easy to use
 - [x] Colorized output and error handling
 
@@ -54,10 +54,11 @@ Flags:
   -x, --exclude-code ints        status codes to exclude / ex : -x 404,500
   -h, --help                     help for webpalm
   -i, --include strings          include only domains / ex : -i google.com,facebook.com
-  -l, --level int                level of palming / ex: -l 2
-      --live                     live output mode (slow but live streaming) / ex: --live
+  -l, --level int                level of palming / ex: -l2
+      --live                     live output mode (slow but live streaming) use only 1 thread / ex: --live
+  -m, --max-concurrency int      max concurrent tasks / ex: -m 10 (default 10)
   -o, --output string            file to export the result (f.json, f.xml, f.txt) / ex: -o result.json
-      --regexes stringToString   regexes to match in each page / ex: --regexes comments="\<\!--.*?-->  (default [])
+      --regexes stringToString   regexes to match in each page / ex: --regexes comments="\<\!--.*?-->" (default [])
   -u, --url string               target url / ex: -u https://google.com
 ```
 ### Examples
@@ -69,7 +70,7 @@ webpalm -u https://google.com -l1 --live
 
 #### get palm tree of a website and exclude some status codes: 
 ```bash
-webpalm -u https://google.com -l1 -x 404,500
+webpalm -u https://google.com -l1 -x 404,500 
 
 ```
 #### get the palm tree of a website and dump data from the body of the pages: 
@@ -97,6 +98,14 @@ webpalm -u https://google.com -l2 -i google.com,facebook.com
 ```
 this will crawl only the urls that contains google.com or facebook.com
 
+### treading and concurrency
+####  get the palm tree of a website and use only 5 concurrent tasks:
+```bash
+webpalm -u https://google.com -l2 -m 5
+```
+📝 **Note**  that that the live mode is working with only 1 thread so you can't use it with the live mode
+
+
 ## Regexes Examples
 | Regex | Pattern                             |
 |-------|-------------------------------------|
@@ -109,7 +118,7 @@ Don't forget escaping the regexes if needed
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
-you can also contact me on discord:`XORbit#5945`
+you can also contact me on discord:`xorbit.`
 
 
 ## Powered By Malwarize

@@ -88,8 +88,17 @@ var rootCmd = &cobra.Command{
 				return
 			}
 		}
-		fmt.Println(options(url, level, liveMode, exportFile, regexMap, excludedStatus, includedUrls))
-		cr := core.NewCrawler(url, level, liveMode, exportFile, regexMap, excludedStatus, includedUrls)
+		maxConcurrency, err := cmd.Flags().GetInt("max-concurrency")
+		if err != nil {
+			fmt.Println("Error: ", err)
+			return
+		}
+		if maxConcurrency < 1 {
+			fmt.Println("Error: Max concurrency should be greater equal than 1")
+			return
+		}
+		fmt.Println(options(url, level, liveMode, exportFile, regexMap, excludedStatus, includedUrls, maxConcurrency))
+		cr := core.NewCrawler(url, level, liveMode, exportFile, regexMap, excludedStatus, includedUrls, maxConcurrency)
 		cr.Crawl()
 	},
 	Example: example() + regexestable(),
@@ -111,7 +120,7 @@ func init() {
 	}
 	rootCmd.Flags().IntP("level", "l", 0, "level of palming / ex: -l2")
 
-	rootCmd.Flags().Bool("live", false, "live output mode (slow but live streaming) / ex: --live")
+	rootCmd.Flags().Bool("live", false, "live output mode (slow but live streaming) use only 1 thread / ex: --live")
 
 	rootCmd.Flags().StringP("output", "o", "", "file to export the result (f.json, f.xml, f.txt) / ex: -o result.json")
 
@@ -120,4 +129,6 @@ func init() {
 	rootCmd.Flags().IntSliceP("exclude-code", "x", []int{}, "status codes to exclude / ex : -x 404,500")
 
 	rootCmd.Flags().StringSliceP("include", "i", []string{}, "include only domains / ex : -i google.com,facebook.com")
+
+	rootCmd.Flags().IntP("max-concurrency", "m", 1000, "max concurrent tasks / ex: -m 10")
 }

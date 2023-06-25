@@ -1,7 +1,6 @@
 package core
 
 import (
-	"fmt"
 	"sync"
 )
 
@@ -17,17 +16,13 @@ func NewSemaphore(maxConcurrent int) *Semaphore {
 }
 
 func (s *Semaphore) Acquire() {
-	fmt.Println("acquiring...")
 	s.ch <- struct{}{}
 	s.wg.Add(1)
-	fmt.Print("tasks aquired:", len(s.ch), "\n")
 }
 
 func (s *Semaphore) Release() {
-	fmt.Println("releasing...")
 	<-s.ch
 	s.wg.Done()
-	fmt.Print("tasks released:", len(s.ch), "\n")
 }
 
 func (s *Semaphore) Wait() {
