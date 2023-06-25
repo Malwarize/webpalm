@@ -103,7 +103,7 @@ this will crawl only the urls that contains google.com or facebook.com
 ```bash
 webpalm -u https://google.com -l2 -m 5
 ```
-📝 **Note**  that that the live mode is working with only 1 thread so you can't use it with the live mode
+📝 **Note**  that the live mode is working with only 1 thread so you can't use it with the live mode
 
 
 ## Regexes Examples
