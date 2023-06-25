@@ -28,7 +28,7 @@ and you are responsible for your actions.
 ### Installation
 #### From source
 ```bash
-git clone https://github.com/XORbit01/webpalm.git
+git clone https://github.com/Malwarize/webpalm.git
 cd webpalm
 go build -o webpalm && ./webpalm
 ```
@@ -43,7 +43,7 @@ cd webpalm
 ```
 ### if you have go installed
 ```bash
-go install github.com/XORbit01/webpalm@latest
+go install github.com/Malwarize/webpalm@latest
 ```
 ### Usage
 ```bash
