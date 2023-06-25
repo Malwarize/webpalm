@@ -41,7 +41,7 @@ func regexestable() string {
 	return coloredTable
 }
 
-func options(url string, level int, liveMode bool, exportFile string, regexMap map[string]string, statusResponses []int, includedUrls []string) string {
+func options(url string, level int, liveMode bool, exportFile string, regexMap map[string]string, statusResponses []int, includedUrls []string, maxConcurrency int) string {
 	var options string
 	//wrap it into big square
 	options += color.RedString("┌")
@@ -84,6 +84,8 @@ func options(url string, level int, liveMode bool, exportFile string, regexMap m
 	} else {
 		options += color.BlueString("Excluded Status: ") + color.CyanString("%v", statusResponses) + "\n"
 	}
+	options += color.RedString("│")
+	options += color.BlueString("Max Concurrency: ") + color.CyanString("%d", maxConcurrency) + "\n"
 	options += color.RedString("└")
 	return options
 }
