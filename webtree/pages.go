@@ -5,6 +5,8 @@ import (
 	"encoding/xml"
 	"fmt"
 	"github.com/fatih/color"
+	"net/url"
+	"path"
 )
 
 type Page struct {
@@ -181,4 +183,18 @@ func (page *Page) AddMatch(rname string, match string) {
 }
 func (page *Page) GetResults() map[string][]string {
 	return page.results
+}
+func (page *Page) ConvertToAbsoluteURL(relativePath string) (string, error) {
+	base, err := url.Parse(page.GetUrl())
+	if err != nil {
+		return "", err
+	}
+
+	absoluteUrl := base.ResolveReference(&url.URL{Path: relativePath})
+	absolutePath := absoluteUrl.Path
+	if !path.IsAbs(absolutePath) {
+		absolutePath = path.Join(base.Path, absolutePath)
+	}
+	absoluteUrl.Path = absolutePath
+	return absoluteUrl.String(), nil
 }

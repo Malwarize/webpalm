@@ -18,6 +18,55 @@ import (
 
 var (
 	GeneralRegex = `((?:https?)://[\w\-]+(?:\.[\w\-]+)+[\w\-\.,@?^=%&:/~\+#]*[\w\-\@?^=%&/~\+#])`
+	HrefRegex    = `href=["']([^"']+)["']`
+)
+var (
+	UnreadableExtensions = []string{
+		".png",
+		".jpg",
+		".jpeg",
+		".gif",
+		".pdf",
+		".doc",
+		".docx",
+		".xls",
+		".xlsx",
+		".ppt",
+		".pptx",
+		".zip",
+		".rar",
+		".tar",
+		".gz",
+		".exe",
+		".mp3",
+		".mp4",
+		".avi",
+		".mov",
+		".wmv",
+		".flv",
+		".wav",
+		".mpeg",
+		".mpg",
+		".m4v",
+		".swf",
+		".svg",
+		".ico",
+		".ttf",
+		".woff",
+		".woff2",
+		".eot",
+		".otf",
+		".psd",
+		".ai",
+		".eps",
+		".indd",
+		".raw",
+		".webm",
+		".m4a",
+		".m4p",
+		".m4b",
+		".m4r",
+	}
 )
 
 type Crawler struct {
@@ -80,9 +129,28 @@ func (c *Crawler) Fetch(page *webtree.Page) {
 
 func (c *Crawler) ExtractLinks(page *webtree.Page) (links []string) {
 	regex := regexp.MustCompile(GeneralRegex)
-	matches := regex.FindAllString(page.GetData(), -1)
-	for _, link := range matches {
+	generalUrlMatches := regex.FindAllString(page.GetData(), -1)
+	for _, link := range generalUrlMatches {
 		links = append(links, link)
+	}
+	hrefRegex := regexp.MustCompile(HrefRegex)
+	hrefMatches := hrefRegex.FindAllStringSubmatch(page.GetData(), -1)
+	for _, match := range hrefMatches {
+		// check if it is a normal url
+		if strings.HasPrefix(match[1], "http") ||
+			strings.HasPrefix(match[1], "https") ||
+			strings.HasPrefix(match[1], "file") {
+			links = append(links, match[1])
+			continue
+		}
+		// check if it is a relative url
+		if strings.HasPrefix(match[1], "/") || strings.HasPrefix(match[1], "./") || strings.HasPrefix(match[1], "../") || strings.HasSuffix(match[1], "/") {
+			u, err := page.ConvertToAbsoluteURL(match[1])
+			if err != nil {
+				continue
+			}
+			links = append(links, u)
+		}
 	}
 	return
 }
@@ -146,6 +214,11 @@ func (c *Crawler) Export(tree webtree.Node, format string, filename string) erro
 }
 
 func (c *Crawler) isSkipableUrl(u string) bool {
+	for _, v := range UnreadableExtensions {
+		if strings.HasSuffix(u, v) {
+			return true
+		}
+	}
 	// get domain name from url
 	if strings.Contains(c.RootURL, u) {
 		return false
@@ -305,6 +378,7 @@ func (c *Crawler) Crawl() {
 			fmt.Println("Saving results to file...")
 			c.SaveResults(root)
 		}
+		c.Cache.Flush()
 		os.Exit(0)
 	}()
 
