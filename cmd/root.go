@@ -112,7 +112,6 @@ func Execute() {
 }
 
 func init() {
-	fmt.Print(banner())
 	rootCmd.Flags().StringP("url", "u", "", "target url / ex: -u https://google.com")
 	err := rootCmd.MarkFlagRequired("url")
 	if err != nil {
