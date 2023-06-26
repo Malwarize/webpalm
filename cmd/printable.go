@@ -100,7 +100,7 @@ palm tree struct of web urls and dump data from
 body pages using regular expressions.`)
 }
 func banner() string {
-	version := color.MagentaString(getVersion())
+	version := color.MagentaString(Version)
 	author := color.MagentaString("github.com/Malwarize")
 	discord := color.MagentaString("discord.gg/g9y7D3xCab")
 

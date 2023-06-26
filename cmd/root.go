@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"bufio"
 	"fmt"
 	"github.com/Malwarize/webpalm/v2/core"
 	"github.com/spf13/cobra"
@@ -27,20 +26,6 @@ func isValidDomain(url string) bool {
 		return false
 	}
 	return true
-}
-
-func getVersion() string {
-	var version string
-	file, err := os.Open("version.txt")
-	if err != nil {
-		version = "v0.0.1"
-	} else {
-		scanner := bufio.NewScanner(file)
-		scanner.Scan()
-		version = scanner.Text()
-	}
-	defer file.Close()
-	return version
 }
 
 var rootCmd = &cobra.Command{
@@ -152,7 +137,7 @@ func init() {
 			Use:   "version",
 			Short: "Print the version number",
 			Run: func(cmd *cobra.Command, args []string) {
-				fmt.Println(getVersion())
+				fmt.Println(Version)
 			},
 		})
 }
