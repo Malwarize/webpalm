@@ -7,25 +7,14 @@ import (
 	"net"
 	"os"
 	"strings"
+	"regexp"
 )
 
 func isValidDomain(url string) bool {
-	url = strings.ToLower(url)
-	//check if url is an ip address
-	if ip := net.ParseIP(url); ip != nil {
-		return true
-	}
-
-	for _, c := range url {
-		if c == '.' {
-			continue
-		}
-	}
-	subs := strings.Split(url, ".")
-	if len(subs) < 2 {
-		return false
-	}
-	return true
+    //check if url is an ip address
+    if ip := net.ParseIP(url); ip != nil { return true }
+    if regexp.MustCompile(`^(([a-z-])\.?)*$`).MatchString(strings.ToLower(url)) { return true }
+    return false
 }
 
 var rootCmd = &cobra.Command{
