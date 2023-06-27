@@ -13,7 +13,7 @@ import (
 func isValidDomain(url string) bool {
     //check if url is an ip address
     if ip := net.ParseIP(url); ip != nil { return true }
-    if regexp.MustCompile(`^(([a-z-])\.?)*$`).MatchString(strings.ToLower(url)) { return true }
+    if regexp.MustCompile(`^(([a-z1-9-])\.?)*$`).MatchString(strings.ToLower(url)) { return true }
     return false
 }
 
