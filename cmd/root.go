@@ -15,7 +15,7 @@ func isValidDomain(url string) bool {
 	if ip := net.ParseIP(url); ip != nil {
 		return true
 	}
-	if regexp.MustCompile(`^([a-zA-Z0-9]+[.])+[a-zA-Z]+$`).MatchString(url) {
+	if regexp.MustCompile(`^([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$`).MatchString(url) {
 		return true
 	}
 	return false
