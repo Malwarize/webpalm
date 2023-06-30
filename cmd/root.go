@@ -6,15 +6,19 @@ import (
 	"github.com/spf13/cobra"
 	"net"
 	"os"
-	"strings"
 	"regexp"
+	"strings"
 )
 
 func isValidDomain(url string) bool {
-    //check if url is an ip address
-    if ip := net.ParseIP(url); ip != nil { return true }
-    if regexp.MustCompile(`^(([a-z1-9-])\.?)*$`).MatchString(strings.ToLower(url)) { return true }
-    return false
+	//check if url is an ip address
+	if ip := net.ParseIP(url); ip != nil {
+		return true
+	}
+	if regexp.MustCompile(`^([a-zA-Z0-9]+[.])+[a-zA-Z]+$`).MatchString(url) {
+		return true
+	}
+	return false
 }
 
 var rootCmd = &cobra.Command{
