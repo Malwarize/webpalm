@@ -25,6 +25,12 @@ var rootCmd = &cobra.Command{
 	Use:   usage(),
 	Short: "A web scraping tool",
 	Long:  long(),
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		if ver,_ := cmd.Flags().GetBool("version"); ver {
+			fmt.Println(Version)
+			os.Exit(1)
+		}
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		url, err := cmd.Flags().GetString("url")
 		if err != nil {
@@ -106,8 +112,7 @@ func Execute() {
 
 func init() {
 	rootCmd.Flags().StringP("url", "u", "", "target url / ex: -u https://google.com")
-	err := rootCmd.MarkFlagRequired("url")
-	if err != nil {
+	if err := rootCmd.MarkFlagRequired("url"); err != nil {
 		return
 	}
 	rootCmd.Flags().IntP("level", "l", 0, "level of palming / ex: -l2")
@@ -123,13 +128,6 @@ func init() {
 	rootCmd.Flags().StringSliceP("include", "i", []string{}, "include only domains / ex : -i google.com,facebook.com")
 
 	rootCmd.Flags().IntP("max-concurrency", "m", 1000, "max concurrent tasks / ex: -m 10")
-
-	rootCmd.AddCommand(
-		&cobra.Command{
-			Use:   "version",
-			Short: "Print the version number",
-			Run: func(cmd *cobra.Command, args []string) {
-				fmt.Println(Version)
-			},
-		})
+	
+	rootCmd.Flags().Bool("version", false, "display version information and exit")
 }
