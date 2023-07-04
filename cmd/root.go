@@ -6,32 +6,26 @@ import (
 	"github.com/spf13/cobra"
 	"net"
 	"os"
+	"regexp"
 	"strings"
 )
 
 func isValidDomain(url string) bool {
-	url = strings.ToLower(url)
 	//check if url is an ip address
 	if ip := net.ParseIP(url); ip != nil {
 		return true
 	}
-
-	for _, c := range url {
-		if c == '.' {
-			continue
-		}
+	if regexp.MustCompile(`^([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$`).MatchString(url) {
+		return true
 	}
-	subs := strings.Split(url, ".")
-	if len(subs) < 2 {
-		return false
-	}
-	return true
+	return false
 }
 
 var rootCmd = &cobra.Command{
 	Use:   usage(),
 	Short: "A web scraping tool",
 	Long:  long(),
+	Version: Version,
 	Run: func(cmd *cobra.Command, args []string) {
 		url, err := cmd.Flags().GetString("url")
 		if err != nil {
@@ -113,8 +107,7 @@ func Execute() {
 
 func init() {
 	rootCmd.Flags().StringP("url", "u", "", "target url / ex: -u https://google.com")
-	err := rootCmd.MarkFlagRequired("url")
-	if err != nil {
+	if err := rootCmd.MarkFlagRequired("url"); err != nil {
 		return
 	}
 	rootCmd.Flags().IntP("level", "l", 0, "level of palming / ex: -l2")
@@ -130,13 +123,4 @@ func init() {
 	rootCmd.Flags().StringSliceP("include", "i", []string{}, "include only domains / ex : -i google.com,facebook.com")
 
 	rootCmd.Flags().IntP("max-concurrency", "m", 1000, "max concurrent tasks / ex: -m 10")
-
-	rootCmd.AddCommand(
-		&cobra.Command{
-			Use:   "version",
-			Short: "Print the version number",
-			Run: func(cmd *cobra.Command, args []string) {
-				fmt.Println(Version)
-			},
-		})
 }
