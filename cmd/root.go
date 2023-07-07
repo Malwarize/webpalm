@@ -91,6 +91,7 @@ var rootCmd = &cobra.Command{
 			fmt.Println("Error: Max concurrency should be greater equal than 1")
 			return
 		}
+		fmt.Println(banner())
 		fmt.Println(options(url, level, liveMode, exportFile, regexMap, excludedStatus, includedUrls, maxConcurrency))
 		cr := core.NewCrawler(url, level, liveMode, exportFile, regexMap, excludedStatus, includedUrls, maxConcurrency)
 		cr.Crawl()
@@ -99,8 +100,7 @@ var rootCmd = &cobra.Command{
 }
 
 func Execute() {
-	err := rootCmd.Execute()
-	if err != nil {
+	if err := rootCmd.Execute(); err != nil {
 		os.Exit(1)
 	}
 }
