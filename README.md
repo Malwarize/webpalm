@@ -98,7 +98,7 @@ webpalm -u https://google.com -l2 -i google.com,facebook.com
 ```
 this will crawl only the urls that contains google.com or facebook.com
 
-### treading and concurrency
+### threading and concurrency
 ####  get the palm tree of a website and use only 5 concurrent tasks:
 ```bash
 webpalm -u https://google.com -l2 -m 5
