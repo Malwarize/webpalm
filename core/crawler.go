@@ -1,6 +1,7 @@
 package core
 
 import (
+	"crypto/tls"
 	"fmt"
 	"github.com/Malwarize/webpalm/v2/webtree"
 	"github.com/briandowns/spinner"
@@ -91,7 +92,7 @@ func NewCrawler(url string, level int, liveMode bool, exportFile string, regexMa
 		RegexMap:       regexMap,
 		ExcludedStatus: statusResponses,
 		IncludedUrls:   includes,
-		Client:         &http.Client{},
+		Client:         &http.Client{Transport: &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}},
 		Cache: Cache{
 			Visited: make(map[string]bool),
 		},
