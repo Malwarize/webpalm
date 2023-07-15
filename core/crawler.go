@@ -23,54 +23,53 @@ var (
 	GeneralRegex = `((?:https?)://[\w\-]+(?:\.[\w\-]+)+[\w\-\.,@?^=%&:/~\+#]*[\w\-\@?^=%&/~\+#])`
 	HrefRegex    = `href=["']([^"']+)["']`
 )
-var (
-	UnreadableExtensions = []string{
-		".png",
-		".jpg",
-		".jpeg",
-		".gif",
-		".pdf",
-		".doc",
-		".docx",
-		".xls",
-		".xlsx",
-		".ppt",
-		".pptx",
-		".zip",
-		".rar",
-		".tar",
-		".gz",
-		".exe",
-		".mp3",
-		".mp4",
-		".avi",
-		".mov",
-		".wmv",
-		".flv",
-		".wav",
-		".mpeg",
-		".mpg",
-		".m4v",
-		".swf",
-		".svg",
-		".ico",
-		".ttf",
-		".woff",
-		".woff2",
-		".eot",
-		".otf",
-		".psd",
-		".ai",
-		".eps",
-		".indd",
-		".raw",
-		".webm",
-		".m4a",
-		".m4p",
-		".m4b",
-		".m4r",
-	}
-)
+
+var UnreadableExtensions = []string{
+	".png",
+	".jpg",
+	".jpeg",
+	".gif",
+	".pdf",
+	".doc",
+	".docx",
+	".xls",
+	".xlsx",
+	".ppt",
+	".pptx",
+	".zip",
+	".rar",
+	".tar",
+	".gz",
+	".exe",
+	".mp3",
+	".mp4",
+	".avi",
+	".mov",
+	".wmv",
+	".flv",
+	".wav",
+	".mpeg",
+	".mpg",
+	".m4v",
+	".swf",
+	".svg",
+	".ico",
+	".ttf",
+	".woff",
+	".woff2",
+	".eot",
+	".otf",
+	".psd",
+	".ai",
+	".eps",
+	".indd",
+	".raw",
+	".webm",
+	".m4a",
+	".m4p",
+	".m4b",
+	".m4r",
+}
 
 type Crawler struct {
 	RootURL        string
@@ -163,7 +162,7 @@ func (c *Crawler) ExportJSON(root webtree.Node, filename string) error {
 	if err != nil {
 		return err
 	}
-	err = os.WriteFile(filename, data, 0644)
+	err = os.WriteFile(filename, data, 0o644)
 	if err != nil {
 		return err
 	}
@@ -175,7 +174,7 @@ func (c *Crawler) ExportTXT(root webtree.Node, filename string) error {
 	if err != nil {
 		return err
 	}
-	err = os.WriteFile(filename, []byte(data), 0644)
+	err = os.WriteFile(filename, []byte(data), 0o644)
 	if err != nil {
 		return err
 	}
@@ -187,7 +186,7 @@ func (c *Crawler) ExportXML(tree webtree.Node, filename string) error {
 	if err != nil {
 		return err
 	}
-	err = os.WriteFile(filename, data, 0644)
+	err = os.WriteFile(filename, data, 0o644)
 	if err != nil {
 		return err
 	}
@@ -325,7 +324,7 @@ func (c *Crawler) CrawlNodeLive(w *webtree.Node) {
 		}
 		w.Page.PrintPageLive(&prefix, last)
 
-		//leaf nodes
+		// leaf nodes
 		if level == 0 {
 			return
 		}

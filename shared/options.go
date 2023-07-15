@@ -76,7 +76,6 @@ func (o Options) BuildOptionBanner() string {
 					banner += color.RedString("│")
 					banner += color.CyanString("  %s", s.Index(i).Interface().(string))
 				}
-
 			}
 			banner += "\n"
 
@@ -129,8 +128,9 @@ func (o *Options) ManipulateData() {
 		o.URL = "http://" + o.URL
 	}
 }
+
 func IsValidDomain(url string) bool {
-	//check if url is an ip address
+	// check if url is an ip address
 	if ip := net.ParseIP(url); ip != nil {
 		return true
 	}

@@ -50,6 +50,7 @@ func long() string {
 palm tree struct of web urls and dump data from
 body pages using regular expressions.`)
 }
+
 func banner() string {
 	version := color.MagentaString(Version)
 	author := color.MagentaString("github.com/Malwarize")
@@ -69,7 +70,7 @@ func banner() string {
         ####
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 `
-	//color // with hiGreen and # and hiCyan
+	// color // with hiGreen and # and hiCyan
 	bannerColor := ""
 	for _, c := range banner {
 		if c == '#' {
