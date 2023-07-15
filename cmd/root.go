@@ -1,100 +1,29 @@
 package cmd
 
 import (
-	"fmt"
-	"github.com/Malwarize/webpalm/v2/core"
-	"github.com/spf13/cobra"
-	"net"
 	"os"
-	"regexp"
-	"strings"
+
+	"github.com/fatih/color"
+
+	"github.com/Malwarize/webpalm/v2/core"
+	"github.com/Malwarize/webpalm/v2/shared"
+	"github.com/spf13/cobra"
 )
 
-func isValidDomain(url string) bool {
-	//check if url is an ip address
-	if ip := net.ParseIP(url); ip != nil {
-		return true
-	}
-	if regexp.MustCompile(`^([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$`).MatchString(url) {
-		return true
-	}
-	return false
-}
-
 var rootCmd = &cobra.Command{
-	Use:   usage(),
-	Short: "A web scraping tool",
-	Long:  long(),
+	Use:     usage(),
+	Short:   "A web scraping tool",
+	Long:    long(),
 	Version: Version,
 	Run: func(cmd *cobra.Command, args []string) {
-		url, err := cmd.Flags().GetString("url")
+		options, err := shared.ValidateThenBuildOption(cmd)
 		if err != nil {
-			//help message
-			fmt.Println("Error: ", err)
-			return
+			color.Red(err.Error())
+			os.Exit(1)
 		}
-		level, err := cmd.Flags().GetInt("level")
-		if err != nil {
-			//help message
-			fmt.Println("Error: ", err)
-			return
-		}
-
-		liveMode, err := cmd.Flags().GetBool("live")
-		if err != nil {
-			//help message
-			fmt.Println("Error: ", err)
-			return
-		}
-
-		if level < 0 {
-			fmt.Println("Error: Level should be greater equal than 0")
-			return
-		}
-		if !strings.HasPrefix(url, "http://") && !strings.HasPrefix(url, "https://") {
-			url = "http://" + url
-		}
-		exportFile, err := cmd.Flags().GetString("output")
-		if err != nil {
-			fmt.Println("Error: ", err)
-			return
-		}
-		regexMap, err := cmd.Flags().GetStringToString("regexes")
-		if err != nil {
-			fmt.Println("Error: ", err)
-			return
-		}
-
-		excludedStatus, err := cmd.Flags().GetIntSlice("exclude-code")
-		if err != nil {
-			fmt.Println("Error: ", err)
-			return
-		}
-
-		includedUrls, err := cmd.Flags().GetStringSlice("include")
-		if err != nil {
-			fmt.Println("Error: ", err)
-			return
-		}
-		for _, include := range includedUrls {
-			if !isValidDomain(include) {
-				fmt.Println("Error: Invalid domain name: ", include)
-				return
-			}
-		}
-		maxConcurrency, err := cmd.Flags().GetInt("max-concurrency")
-		if err != nil {
-			fmt.Println("Error: ", err)
-			return
-		}
-		if maxConcurrency < 1 {
-			fmt.Println("Error: Max concurrency should be greater equal than 1")
-			return
-		}
-		fmt.Println(banner())
-		fmt.Println(options(url, level, liveMode, exportFile, regexMap, excludedStatus, includedUrls, maxConcurrency))
-		cr := core.NewCrawler(url, level, liveMode, exportFile, regexMap, excludedStatus, includedUrls, maxConcurrency)
-		cr.Crawl()
+		options.PrintBanner()
+		crawler := core.NewCrawler(options)
+		crawler.Crawl()
 	},
 	Example: example() + regexestable(),
 }
