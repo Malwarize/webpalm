@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/fatih/color"
@@ -21,6 +22,7 @@ var rootCmd = &cobra.Command{
 			color.Red(err.Error())
 			os.Exit(1)
 		}
+		fmt.Print(banner())
 		options.PrintBanner()
 		crawler := core.NewCrawler(options)
 		crawler.Crawl()
