@@ -3,9 +3,6 @@ package core
 import (
 	"crypto/tls"
 	"fmt"
-	"github.com/Malwarize/webpalm/v2/webtree"
-	"github.com/briandowns/spinner"
-	"github.com/fatih/color"
 	"io"
 	"net/http"
 	"os"
@@ -15,6 +12,11 @@ import (
 	"sync"
 	"syscall"
 	"time"
+
+	"github.com/Malwarize/webpalm/v2/shared"
+	"github.com/Malwarize/webpalm/v2/webtree"
+	"github.com/briandowns/spinner"
+	"github.com/fatih/color"
 )
 
 var (
@@ -83,20 +85,20 @@ type Crawler struct {
 	MaxConcurrency int
 }
 
-func NewCrawler(url string, level int, liveMode bool, exportFile string, regexMap map[string]string, statusResponses []int, includes []string, maxConcurrency int) *Crawler {
+func NewCrawler(options *shared.Options) *Crawler {
 	return &Crawler{
-		RootURL:        url,
-		Level:          level,
-		LiveMode:       liveMode,
-		ExportFile:     exportFile,
-		RegexMap:       regexMap,
-		ExcludedStatus: statusResponses,
-		IncludedUrls:   includes,
+		RootURL:        options.URL,
+		Level:          options.Level,
+		LiveMode:       options.LiveMode,
+		ExportFile:     options.ExportFile,
+		RegexMap:       options.RegexMap,
+		ExcludedStatus: options.StatusResponses,
+		IncludedUrls:   options.IncludedUrls,
 		Client:         &http.Client{Transport: &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}},
 		Cache: Cache{
 			Visited: make(map[string]bool),
 		},
-		MaxConcurrency: maxConcurrency,
+		MaxConcurrency: options.MaxConcurrency,
 	}
 }
 
