@@ -61,8 +61,8 @@ func (o Options) BuildOptionBanner() string {
 			banner += color.BlueString(name + ": ")
 
 			// check the type of the slice
-			typeofindex := s.Index(0).Kind()
-			if typeofindex == reflect.Int {
+			typeOfIndex := s.Index(0).Kind()
+			if typeOfIndex == reflect.Int {
 				for i := 0; i < s.Len(); i++ {
 					if i == s.Len()-1 {
 						banner += color.CyanString(" %d", s.Index(i).Interface().(int))
@@ -72,7 +72,7 @@ func (o Options) BuildOptionBanner() string {
 					banner += color.CyanString(" %d", s.Index(i).Interface().(int))
 					banner += color.CyanString(",")
 				}
-			} else if typeofindex == reflect.String {
+			} else if typeOfIndex == reflect.String {
 				for i := 0; i < s.Len(); i++ {
 					banner += color.CyanString("\n")
 					banner += color.RedString("│")
@@ -81,8 +81,7 @@ func (o Options) BuildOptionBanner() string {
 			}
 			banner += "\n"
 
-		}
-		if typeof.Kind() == reflect.String {
+		} else if typeof.Kind() == reflect.String {
 
 			banner += color.RedString("│")
 			banner += color.BlueString(name + ": ")
