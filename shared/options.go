@@ -3,7 +3,7 @@ package shared
 import (
 	"fmt"
 	"net"
-	urltool "net/url"
+	urlTool "net/url"
 	"reflect"
 	"regexp"
 	"strings"
@@ -21,16 +21,16 @@ type Options struct {
 	StatusResponses []int             `name:"exclude codes"`
 	IncludedUrls    []string          `name:"include"`
 	MaxConcurrency  int               `name:"max concurrency"`
-	Proxy           *urltool.URL      `name:"proxy"`
+	Proxy           *urlTool.URL      `name:"proxy"`
 }
 
-func (o Options) BuildOptionBanner() string {
+func (o *Options) BuildOptionBanner() string {
 	var banner string
 	banner += color.RedString("┌")
 	banner += color.RedString("[")
-	banner += color.MagentaString(o.URL)
+	banner += color.MagentaString((*o).URL)
 	banner += color.RedString("]\n")
-	t := reflect.TypeOf(o)
+	t := reflect.TypeOf(*o)
 	for i := 0; i < t.NumField(); i++ {
 
 		field := t.Field(i)
@@ -38,7 +38,7 @@ func (o Options) BuildOptionBanner() string {
 		if name == "url" {
 			continue
 		}
-		value := reflect.ValueOf(o).Field(i).Interface()
+		value := reflect.ValueOf(*o).Field(i).Interface()
 		if value == nil || value == "" || value == false {
 			banner += color.RedString("│")
 			banner += color.BlueString(name + ": ")
@@ -205,9 +205,9 @@ func ValidateThenBuildOption(cmd *cobra.Command) (*Options, error) {
 		return nil, err
 	}
 
-	var parsedProxy *urltool.URL
+	var parsedProxy *urlTool.URL
 	if proxy != "" {
-		parsedProxy, err = urltool.Parse(proxy)
+		parsedProxy, err = urlTool.Parse(proxy)
 		if err != nil {
 			return nil, err
 		}
