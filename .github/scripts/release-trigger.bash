@@ -16,7 +16,7 @@ echo "$code"  > cmd/version.go
 # commit and push the change
 git add cmd/version.go
 git commit -m "bump version to $new_tag"
-git push origin master
+git push origin main
 
 # create a tag
 git tag "$new_tag"
