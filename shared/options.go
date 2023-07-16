@@ -3,6 +3,7 @@ package shared
 import (
 	"fmt"
 	"net"
+	urltool "net/url"
 	"reflect"
 	"regexp"
 	"strings"
@@ -20,6 +21,7 @@ type Options struct {
 	StatusResponses []int             `name:"exclude codes"`
 	IncludedUrls    []string          `name:"include"`
 	MaxConcurrency  int               `name:"max concurrency"`
+	Proxy           *urltool.URL      `name:"proxy"`
 }
 
 func (o Options) BuildOptionBanner() string {
@@ -112,6 +114,16 @@ func (o Options) BuildOptionBanner() string {
 				banner += color.CyanString("  %s: %s", k, v)
 				banner += "\n"
 			}
+		} else {
+
+			banner += color.RedString("│")
+			banner += color.BlueString(name + ": ")
+			if fmt.Sprintf("%v", value) == "<nil>" {
+				banner += color.CyanString("not set")
+			} else {
+				banner += color.CyanString("%v", value)
+			}
+			banner += "\n"
 		}
 
 	}
@@ -189,6 +201,26 @@ func ValidateThenBuildOption(cmd *cobra.Command) (*Options, error) {
 		return nil, err
 	}
 
+	proxy, err := cmd.Flags().GetString("proxy")
+	if err != nil {
+		return nil, err
+	}
+
+	var parsedProxy *urltool.URL
+	if proxy != "" {
+		parsedProxy, err = urltool.Parse(proxy)
+		if err != nil {
+			return nil, err
+		}
+
+	} else {
+		parsedProxy = nil
+	}
+	// set max concurrency to 1 if live mode is enabled
+	if liveMode {
+		maxConcurrency = 1
+	}
+
 	options := &Options{
 		URL:             url,
 		Level:           level,
@@ -198,6 +230,7 @@ func ValidateThenBuildOption(cmd *cobra.Command) (*Options, error) {
 		StatusResponses: excludedStatus,
 		IncludedUrls:    includedUrls,
 		MaxConcurrency:  maxConcurrency,
+		Proxy:           parsedProxy,
 	}
 	options.ManipulateData()
 	return options, nil

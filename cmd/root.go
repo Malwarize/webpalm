@@ -54,4 +54,6 @@ func init() {
 	rootCmd.Flags().StringSliceP("include", "i", []string{}, "include only domains / ex : -i google.com,facebook.com")
 
 	rootCmd.Flags().IntP("max-concurrency", "m", 1000, "max concurrent tasks / ex: -m 10")
+
+	rootCmd.Flags().StringP("proxy", "p", "", "proxy to use / ex: -p http://proxy.com:8080")
 }

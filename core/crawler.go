@@ -85,7 +85,7 @@ type Crawler struct {
 }
 
 func NewCrawler(options *shared.Options) *Crawler {
-	return &Crawler{
+	crawler := Crawler{
 		RootURL:        options.URL,
 		Level:          options.Level,
 		LiveMode:       options.LiveMode,
@@ -93,12 +93,21 @@ func NewCrawler(options *shared.Options) *Crawler {
 		RegexMap:       options.RegexMap,
 		ExcludedStatus: options.StatusResponses,
 		IncludedUrls:   options.IncludedUrls,
-		Client:         &http.Client{Transport: &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}},
 		Cache: Cache{
 			Visited: make(map[string]bool),
 		},
 		MaxConcurrency: options.MaxConcurrency,
 	}
+	transport := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+	if options.Proxy != nil {
+		transport.Proxy = http.ProxyURL(options.Proxy)
+	}
+	crawler.Client = &http.Client{
+		Transport: transport,
+	}
+	return &crawler
 }
 
 func (c *Crawler) Fetch(page *webtree.Page) {
@@ -132,9 +141,7 @@ func (c *Crawler) Fetch(page *webtree.Page) {
 func (c *Crawler) ExtractLinks(page *webtree.Page) (links []string) {
 	regex := regexp.MustCompile(GeneralRegex)
 	generalUrlMatches := regex.FindAllString(page.GetData(), -1)
-	for _, link := range generalUrlMatches {
-		links = append(links, link)
-	}
+	links = append(links, generalUrlMatches...)
 	hrefRegex := regexp.MustCompile(HrefRegex)
 	hrefMatches := hrefRegex.FindAllStringSubmatch(page.GetData(), -1)
 	for _, match := range hrefMatches {
