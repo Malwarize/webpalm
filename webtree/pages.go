@@ -4,9 +4,10 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
-	"github.com/fatih/color"
 	"net/url"
 	"path"
+
+	"github.com/fatih/color"
 )
 
 type Page struct {
@@ -39,11 +40,13 @@ func NewPage() *Page {
 		results: make(map[string][]string),
 	}
 }
+
 func NewJsonPage() *JsonPage {
 	return &JsonPage{
 		Results: make(map[string][]string),
 	}
 }
+
 func NewXmlPage() *XmlPage {
 	return &XmlPage{
 		Results: make([]*XmlPageResult, 0),
@@ -57,6 +60,7 @@ func (p XmlPage) SprintXML() ([]byte, error) {
 	}
 	return data, nil
 }
+
 func (p JsonPage) SprintJSON() ([]byte, error) {
 	data, err := json.MarshalIndent(p, "", "    ")
 	if err != nil {
@@ -68,6 +72,7 @@ func (p JsonPage) SprintJSON() ([]byte, error) {
 func (page *Page) GetUrl() string {
 	return page.url
 }
+
 func (page *Page) SetUrl(url string) {
 	page.url = url
 }
@@ -75,6 +80,7 @@ func (page *Page) SetUrl(url string) {
 func (page *Page) GetStatusCode() int {
 	return page.statusCode
 }
+
 func (page *Page) SetStatusCode(code int) {
 	page.statusCode = code
 }
@@ -82,6 +88,7 @@ func (page *Page) SetStatusCode(code int) {
 func (page *Page) GetData() string {
 	return page.data
 }
+
 func (page *Page) SetData(s string) {
 	page.data = s
 }
@@ -127,6 +134,7 @@ func (page *Page) SprintPageLineColored(prefix *string, last bool) string {
 	}
 	return out
 }
+
 func (page *Page) SprintPageLine(prefix *string, last bool) string {
 	out := fmt.Sprint(*prefix)
 	if last {
@@ -181,9 +189,11 @@ func (page *Page) AddMatch(rname string, match string) {
 	}
 	page.results[rname] = append(page.results[rname], match)
 }
+
 func (page *Page) GetResults() map[string][]string {
 	return page.results
 }
+
 func (page *Page) ConvertToAbsoluteURL(relativePath string) (string, error) {
 	base, err := url.Parse(page.GetUrl())
 	if err != nil {

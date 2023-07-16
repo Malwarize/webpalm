@@ -19,6 +19,7 @@ func (node *Node) AddChild(page *Page) *Node {
 func (node *Node) SprintJSON() ([]byte, error) {
 	return node.ToJSONPage().SprintJSON()
 }
+
 func (node *Node) SprintTXT() (string, error) {
 	var out string = ""
 	var f func(node *Node, prefix string, isLast bool)
@@ -32,6 +33,7 @@ func (node *Node) SprintTXT() (string, error) {
 	f(node, "", true)
 	return out, nil
 }
+
 func (node *Node) SprintTXTColored() (string, error) {
 	var out string = ""
 	var f func(node *Node, prefix string, isLast bool)
@@ -45,6 +47,7 @@ func (node *Node) SprintTXTColored() (string, error) {
 	f(node, "", true)
 	return out, nil
 }
+
 func (node *Node) SprintXML() ([]byte, error) {
 	return node.ToXMLPage().SprintXML()
 }

@@ -41,55 +41,6 @@ func regexestable() string {
 	return coloredTable
 }
 
-func options(url string, level int, liveMode bool, exportFile string, regexMap map[string]string, statusResponses []int, includedUrls []string, maxConcurrency int) string {
-	var options string
-	//wrap it into big square
-	options += color.RedString("┌")
-	options += color.RedString("[")
-	options += color.MagentaString(url)
-	options += color.RedString("]\n")
-	options += color.RedString("│")
-	options += color.BlueString("Level: ") + color.CyanString("%d", level) + "\n"
-	options += color.RedString("│")
-	options += color.BlueString("Live Mode: ") + color.CyanString("%t", liveMode) + "\n"
-	options += color.RedString("│")
-	if exportFile == "" {
-		options += color.BlueString("Export to: ") + color.CyanString("%s", "nothing") + "\n"
-	} else {
-		options += color.BlueString("Export to: ") + color.CyanString(exportFile) + "\n"
-	}
-	options += color.RedString("│")
-	options += color.BlueString("Regexes: ") + "\n"
-	if len(regexMap) == 0 {
-		options += color.RedString("│")
-		options += color.CyanString("  %s\n", "nothing")
-	}
-	for k, v := range regexMap {
-		options += color.RedString("│")
-		options += color.CyanString("  %s: %s\n", k, v)
-	}
-	options += color.RedString("│")
-	options += color.BlueString("Crawl Only : ") + "\n"
-	if len(includedUrls) == 0 {
-		options += color.RedString("│")
-		options += color.CyanString("  %s\n", "all")
-	}
-	for _, v := range includedUrls {
-		options += color.RedString("│")
-		options += color.CyanString("  %s\n", v)
-	}
-	options += color.RedString("│")
-	if len(statusResponses) == 0 {
-		options += color.BlueString("Excluded Status: ") + color.CyanString("%s", "nothing") + "\n"
-	} else {
-		options += color.BlueString("Excluded Status: ") + color.CyanString("%v", statusResponses) + "\n"
-	}
-	options += color.RedString("│")
-	options += color.BlueString("Max Concurrency: ") + color.CyanString("%d", maxConcurrency) + "\n"
-	options += color.RedString("└")
-	return options
-}
-
 func usage() string {
 	return `webpalm`
 }
@@ -99,6 +50,7 @@ func long() string {
 palm tree struct of web urls and dump data from
 body pages using regular expressions.`)
 }
+
 func banner() string {
 	version := color.MagentaString(Version)
 	author := color.MagentaString("github.com/Malwarize")
@@ -118,7 +70,7 @@ func banner() string {
         ####
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 `
-	//color // with hiGreen and # and hiCyan
+	// color // with hiGreen and # and hiCyan
 	bannerColor := ""
 	for _, c := range banner {
 		if c == '#' {

@@ -1,9 +1,10 @@
 package tests
 
 import (
-	"github.com/Malwarize/webpalm/v2/core"
 	"net/http"
 	"testing"
+
+	"github.com/Malwarize/webpalm/v2/core"
 )
 
 func TestCrawler_Crawl(t *testing.T) {

@@ -3,9 +3,6 @@ package core
 import (
 	"crypto/tls"
 	"fmt"
-	"github.com/Malwarize/webpalm/v2/webtree"
-	"github.com/briandowns/spinner"
-	"github.com/fatih/color"
 	"io"
 	"net/http"
 	"os"
@@ -15,60 +12,64 @@ import (
 	"sync"
 	"syscall"
 	"time"
+
+	"github.com/Malwarize/webpalm/v2/shared"
+	"github.com/Malwarize/webpalm/v2/webtree"
+	"github.com/briandowns/spinner"
+	"github.com/fatih/color"
 )
 
 var (
 	GeneralRegex = `((?:https?)://[\w\-]+(?:\.[\w\-]+)+[\w\-\.,@?^=%&:/~\+#]*[\w\-\@?^=%&/~\+#])`
 	HrefRegex    = `href=["']([^"']+)["']`
 )
-var (
-	UnreadableExtensions = []string{
-		".png",
-		".jpg",
-		".jpeg",
-		".gif",
-		".pdf",
-		".doc",
-		".docx",
-		".xls",
-		".xlsx",
-		".ppt",
-		".pptx",
-		".zip",
-		".rar",
-		".tar",
-		".gz",
-		".exe",
-		".mp3",
-		".mp4",
-		".avi",
-		".mov",
-		".wmv",
-		".flv",
-		".wav",
-		".mpeg",
-		".mpg",
-		".m4v",
-		".swf",
-		".svg",
-		".ico",
-		".ttf",
-		".woff",
-		".woff2",
-		".eot",
-		".otf",
-		".psd",
-		".ai",
-		".eps",
-		".indd",
-		".raw",
-		".webm",
-		".m4a",
-		".m4p",
-		".m4b",
-		".m4r",
-	}
-)
+
+var UnreadableExtensions = []string{
+	".png",
+	".jpg",
+	".jpeg",
+	".gif",
+	".pdf",
+	".doc",
+	".docx",
+	".xls",
+	".xlsx",
+	".ppt",
+	".pptx",
+	".zip",
+	".rar",
+	".tar",
+	".gz",
+	".exe",
+	".mp3",
+	".mp4",
+	".avi",
+	".mov",
+	".wmv",
+	".flv",
+	".wav",
+	".mpeg",
+	".mpg",
+	".m4v",
+	".swf",
+	".svg",
+	".ico",
+	".ttf",
+	".woff",
+	".woff2",
+	".eot",
+	".otf",
+	".psd",
+	".ai",
+	".eps",
+	".indd",
+	".raw",
+	".webm",
+	".m4a",
+	".m4p",
+	".m4b",
+	".m4r",
+}
 
 type Crawler struct {
 	RootURL        string
@@ -83,20 +84,20 @@ type Crawler struct {
 	MaxConcurrency int
 }
 
-func NewCrawler(url string, level int, liveMode bool, exportFile string, regexMap map[string]string, statusResponses []int, includes []string, maxConcurrency int) *Crawler {
+func NewCrawler(options *shared.Options) *Crawler {
 	return &Crawler{
-		RootURL:        url,
-		Level:          level,
-		LiveMode:       liveMode,
-		ExportFile:     exportFile,
-		RegexMap:       regexMap,
-		ExcludedStatus: statusResponses,
-		IncludedUrls:   includes,
+		RootURL:        options.URL,
+		Level:          options.Level,
+		LiveMode:       options.LiveMode,
+		ExportFile:     options.ExportFile,
+		RegexMap:       options.RegexMap,
+		ExcludedStatus: options.StatusResponses,
+		IncludedUrls:   options.IncludedUrls,
 		Client:         &http.Client{Transport: &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}},
 		Cache: Cache{
 			Visited: make(map[string]bool),
 		},
-		MaxConcurrency: maxConcurrency,
+		MaxConcurrency: options.MaxConcurrency,
 	}
 }
 
@@ -161,7 +162,7 @@ func (c *Crawler) ExportJSON(root webtree.Node, filename string) error {
 	if err != nil {
 		return err
 	}
-	err = os.WriteFile(filename, data, 0644)
+	err = os.WriteFile(filename, data, 0o644)
 	if err != nil {
 		return err
 	}
@@ -173,7 +174,7 @@ func (c *Crawler) ExportTXT(root webtree.Node, filename string) error {
 	if err != nil {
 		return err
 	}
-	err = os.WriteFile(filename, []byte(data), 0644)
+	err = os.WriteFile(filename, []byte(data), 0o644)
 	if err != nil {
 		return err
 	}
@@ -185,7 +186,7 @@ func (c *Crawler) ExportXML(tree webtree.Node, filename string) error {
 	if err != nil {
 		return err
 	}
-	err = os.WriteFile(filename, data, 0644)
+	err = os.WriteFile(filename, data, 0o644)
 	if err != nil {
 		return err
 	}
@@ -323,7 +324,7 @@ func (c *Crawler) CrawlNodeLive(w *webtree.Node) {
 		}
 		w.Page.PrintPageLive(&prefix, last)
 
-		//leaf nodes
+		// leaf nodes
 		if level == 0 {
 			return
 		}
