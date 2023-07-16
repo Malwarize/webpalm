@@ -34,7 +34,7 @@ go build -o webpalm && ./webpalm
 ```
 #### From binary
 you can download the binary from
-[Releases](https://github.com/Malwarize/webpalm/v2/releases/latest)
+[Releases](https://github.com/Malwarize/webpalm/releases/latest)
 ```bash
 wget https://github.com/Malwarize/webpalm/releases/download/v0.0.1/webpalm_x.x.x_os_arch.tar.gz
 tar -xvf webpalm_x.x.x_os_arch.tar.gz
