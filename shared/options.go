@@ -6,7 +6,6 @@ import (
 	urlTool "net/url"
 	"reflect"
 	"regexp"
-	"strings"
 
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
@@ -135,7 +134,7 @@ func (o *Options) PrintBanner() {
 }
 
 func (o *Options) ManipulateData() {
-	if !strings.HasPrefix(o.URL, "http://") && !strings.HasPrefix(o.URL, "https://") {
+	if matched, _ := regexp.MatchString(`https?://`, o.URL); !matched {
 		o.URL = "http://" + o.URL
 	}
 }
