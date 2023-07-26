@@ -21,6 +21,7 @@ type Options struct {
 	IncludedUrls    []string          `name:"include"`
 	MaxConcurrency  int               `name:"max concurrency"`
 	Proxy           *urlTool.URL      `name:"proxy"`
+	TimeOut         int               `name:"timeout"`
 }
 
 func (o *Options) BuildOptionBanner() string {
@@ -218,7 +219,11 @@ func ValidateThenBuildOption(cmd *cobra.Command) (*Options, error) {
 	if liveMode {
 		maxConcurrency = 1
 	}
-
+	// timeout
+	timeout, err := cmd.Flags().GetInt("timeout")
+	if err != nil {
+		return nil, err
+	}
 	options := &Options{
 		URL:             url,
 		Level:           level,
@@ -229,6 +234,7 @@ func ValidateThenBuildOption(cmd *cobra.Command) (*Options, error) {
 		IncludedUrls:    includedUrls,
 		MaxConcurrency:  maxConcurrency,
 		Proxy:           parsedProxy,
+		TimeOut:         timeout,
 	}
 	options.ManipulateData()
 	return options, nil

@@ -106,6 +106,7 @@ func NewCrawler(options *shared.Options) *Crawler {
 	}
 	crawler.Client = &http.Client{
 		Transport: transport,
+		Timeout:   time.Duration(options.TimeOut) * time.Second,
 	}
 	return &crawler
 }
