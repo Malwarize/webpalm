@@ -6,6 +6,7 @@ import (
 	urlTool "net/url"
 	"reflect"
 	"regexp"
+	"strings"
 
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
