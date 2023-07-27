@@ -58,4 +58,7 @@ func init() {
 	rootCmd.Flags().StringP("proxy", "p", "", "proxy to use / ex: -p http://proxy.com:8080")
 
 	rootCmd.Flags().IntP("timeout", "t", 10, "timeout in seconds / ex: -t 10")
+
+	rootCmd.Flags().StringP("user-agent", "a", "", "user agent to use / ex: -a chrome, firefox, safari, ie, edge, opera, android, ios, custom")
+
 }

@@ -22,6 +22,7 @@ type Options struct {
 	MaxConcurrency  int               `name:"max concurrency"`
 	Proxy           *urlTool.URL      `name:"proxy"`
 	TimeOut         int               `name:"timeout"`
+	UserAgent       string            `name:"user agent"`
 }
 
 func (o *Options) BuildOptionBanner() string {
@@ -224,6 +225,37 @@ func ValidateThenBuildOption(cmd *cobra.Command) (*Options, error) {
 	if err != nil {
 		return nil, err
 	}
+	userAgent, err := cmd.Flags().GetString("user-agent")
+	if err != nil {
+		return nil, err
+	}
+
+	var userAgentString string
+	userAgent = strings.ToLower(userAgent)
+	if userAgent == "chrome" {
+		userAgentString = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" +
+			"(KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36"
+	} else if userAgent == "firefox" {
+		userAgentString = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:63.0) Gecko/20100101" +
+			" Firefox/63.0"
+	} else if userAgent == "safari" {
+		userAgentString = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14) AppleWebKit/605.1.15" +
+			" (KHTML, like Gecko) Version/12.0 Safari/605.1.15"
+	} else if userAgent == "ie" {
+		userAgentString = "Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; rv:11.0)" +
+			" like Gecko"
+	} else if userAgent == "opera" {
+		userAgentString = "Opera/9.80 (Windows NT 6.1; WOW64) Presto/2.12.388 Version/12.18"
+	} else if userAgent == "android" {
+		userAgentString = "Mozilla/5.0 (Linux; Android 8.0.0;) AppleWebKit/537.36" +
+			" (KHTML, like Gecko) Chrome/70.0.3538.110 Mobile Safari/537.36"
+	} else if userAgent == "ios" {
+		userAgentString = "Mozilla/5.0 (iPhone; CPU iPhone OS 12_0 like Mac OS X) AppleWebKit/605.1.15" +
+			" (KHTML, like Gecko) Version/12.0 Mobile/15E148 Safari/604.1"
+	} else {
+		userAgentString = userAgent
+	}
+
 	options := &Options{
 		URL:             url,
 		Level:           level,
@@ -235,6 +267,7 @@ func ValidateThenBuildOption(cmd *cobra.Command) (*Options, error) {
 		MaxConcurrency:  maxConcurrency,
 		Proxy:           parsedProxy,
 		TimeOut:         timeout,
+		UserAgent:       userAgentString,
 	}
 	options.ManipulateData()
 	return options, nil

@@ -80,6 +80,7 @@ type Crawler struct {
 	ExcludedStatus []int
 	IncludedUrls   []string
 	Client         *http.Client
+	UserAgent      string
 	Cache          Cache
 	MaxConcurrency int
 }
@@ -93,10 +94,11 @@ func NewCrawler(options *shared.Options) *Crawler {
 		RegexMap:       options.RegexMap,
 		ExcludedStatus: options.StatusResponses,
 		IncludedUrls:   options.IncludedUrls,
+		MaxConcurrency: options.MaxConcurrency,
+		UserAgent:      options.UserAgent,
 		Cache: Cache{
 			Visited: make(map[string]bool),
 		},
-		MaxConcurrency: options.MaxConcurrency,
 	}
 	transport := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
@@ -125,6 +127,9 @@ func (c *Crawler) Fetch(page *webtree.Page) {
 	req, err := http.NewRequest("GET", page.GetUrl(), nil)
 	if err != nil {
 		return
+	}
+	if c.UserAgent != "" {
+		req.Header.Set("User-Agent", c.UserAgent)
 	}
 	resp, err := c.Client.Do(req)
 	if err != nil {
