@@ -1,4 +1,4 @@
-![takealook](https://github.com/Malwarize/webpalm/assets/130087473/468ff4f9-863a-494c-88be-1fad983b9694)# webpalm
+# WebPalm
 
 ![banner](https://user-images.githubusercontent.com/130087473/235356807-32b80288-7808-4f66-a6f2-fcbe7ab34b72.png)
 
