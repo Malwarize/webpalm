@@ -1,4 +1,4 @@
-# webpalm
+![takealook](https://github.com/Malwarize/webpalm/assets/130087473/468ff4f9-863a-494c-88be-1fad983b9694)# webpalm
 
 ![banner](https://user-images.githubusercontent.com/130087473/235356807-32b80288-7808-4f66-a6f2-fcbe7ab34b72.png)
 
@@ -7,7 +7,7 @@
 <br></br>
 
 # Take a look 
-[![asciicast](https://asciinema.org/a/Ta9V68iidfWD0DSq2J49H6Ipb.svg)](https://asciinema.org/a/Ta9V68iidfWD0DSq2J49H6Ipb)
+![takealook-min](https://github.com/Malwarize/webpalm/assets/130087473/6c601672-f278-431d-854b-0a9876a2fafd)
 
 ## What is webpalm?
 WebPalm is a command-line tool that enables users to traverse a website and generate a tree of all its webpages and their links. It uses a recursive approach to enter each link found on a webpage and continues to do so until all levels have been explored.
