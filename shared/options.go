@@ -21,6 +21,7 @@ type Options struct {
 	StatusResponses []int             `name:"exclude codes"`
 	IncludedUrls    []string          `name:"include"`
 	MaxConcurrency  int               `name:"max concurrency"`
+	Delay           int               `name:"delay"`
 	Proxy           *urlTool.URL      `name:"proxy"`
 	TimeOut         int               `name:"timeout"`
 	UserAgent       string            `name:"user agent"`
@@ -202,6 +203,11 @@ func ValidateThenBuildOption(cmd *cobra.Command) (*Options, error) {
 		return nil, err
 	}
 
+	delay, err := cmd.Flags().GetInt("delay")
+	if err != nil {
+		return nil, err
+	}
+
 	proxy, err := cmd.Flags().GetString("proxy")
 	if err != nil {
 		return nil, err
@@ -266,6 +272,7 @@ func ValidateThenBuildOption(cmd *cobra.Command) (*Options, error) {
 		StatusResponses: excludedStatus,
 		IncludedUrls:    includedUrls,
 		MaxConcurrency:  maxConcurrency,
+		Delay:           delay,
 		Proxy:           parsedProxy,
 		TimeOut:         timeout,
 		UserAgent:       userAgentString,

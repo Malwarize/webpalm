@@ -55,6 +55,8 @@ func init() {
 
 	rootCmd.Flags().IntP("max-concurrency", "m", 1000, "max concurrent tasks / ex: -m 10")
 
+	rootCmd.Flags().IntP("delay", "d", 0, "delay between each request in each task in milliseconds / ex: -d 200")
+
 	rootCmd.Flags().StringP("proxy", "p", "", "proxy to use / ex: -p http://proxy.com:8080")
 
 	rootCmd.Flags().IntP("timeout", "t", 10, "timeout in seconds / ex: -t 10")
