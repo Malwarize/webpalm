@@ -144,10 +144,6 @@ func (c *Crawler) Fetch(page *webtree.Page) {
 	}
 	page.SetData(string(body))
 	page.SetStatusCode(resp.StatusCode)
-
-	if c.Delay > 0 {
-		time.Sleep(time.Duration(c.Delay) * time.Millisecond)
-	}
 }
 
 func (c *Crawler) ExtractLinks(page *webtree.Page) (links []string) {
@@ -335,6 +331,11 @@ func (c *Crawler) CrawlNodeLive(w *webtree.Node) {
 			return
 		}
 		c.Fetch(&w.Page)
+
+		if c.Delay > 0 {
+			time.Sleep(time.Duration(c.Delay) * time.Millisecond)
+		}
+
 		// add matches
 		c.AddMatches(w.Page)
 
