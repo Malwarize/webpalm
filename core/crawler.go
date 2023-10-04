@@ -83,6 +83,7 @@ type Crawler struct {
 	UserAgent      string
 	Cache          Cache
 	MaxConcurrency int
+	Delay          int
 }
 
 func NewCrawler(options *shared.Options) *Crawler {
@@ -95,6 +96,7 @@ func NewCrawler(options *shared.Options) *Crawler {
 		ExcludedStatus: options.StatusResponses,
 		IncludedUrls:   options.IncludedUrls,
 		MaxConcurrency: options.MaxConcurrency,
+		Delay:          options.Delay,
 		UserAgent:      options.UserAgent,
 		Cache: Cache{
 			Visited: make(map[string]bool),
@@ -329,6 +331,11 @@ func (c *Crawler) CrawlNodeLive(w *webtree.Node) {
 			return
 		}
 		c.Fetch(&w.Page)
+
+		if c.Delay > 0 {
+			time.Sleep(time.Duration(c.Delay) * time.Millisecond)
+		}
+
 		// add matches
 		c.AddMatches(w.Page)
 
