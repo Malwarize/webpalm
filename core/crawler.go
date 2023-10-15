@@ -300,6 +300,7 @@ func (c *Crawler) CrawlNodeBlock(w *webtree.Node) {
 			semaphore.Release()
 			return
 		}
+
 		// add to visited node to cache
 		c.Cache.AddVisited(w.Page.GetUrl())
 		links := c.ExtractLinks(&w.Page)
