@@ -2,18 +2,27 @@ package webtree
 
 import (
 	"fmt"
+	"sync"
 )
 
 type Node struct {
 	Page     Page
 	Parent   *Node
 	Children []*Node
+	mutex    sync.Mutex
 }
 
 func (node *Node) AddChild(page *Page) *Node {
+	node.mutex.Lock()
+	defer node.mutex.Unlock()
 	child := &Node{Page: *page, Parent: node}
 	node.Children = append(node.Children, child)
 	return child
+}
+func (node *Node) GetChildren() []*Node {
+	node.mutex.Lock()
+	defer node.mutex.Unlock()
+	return node.Children
 }
 
 func (node *Node) SprintJSON() ([]byte, error) {
@@ -25,8 +34,8 @@ func (node *Node) SprintTXT() (string, error) {
 	var f func(node *Node, prefix string, isLast bool)
 	f = func(node *Node, prefix string, isLast bool) {
 		out += node.Page.SprintPageLine(&prefix, isLast)
-		for i, child := range node.Children {
-			isLast := i == len(node.Children)-1
+		for i, child := range node.GetChildren() {
+			isLast := i == len(node.GetChildren())-1
 			f(child, prefix, isLast)
 		}
 	}
@@ -39,8 +48,8 @@ func (node *Node) SprintTXTColored() (string, error) {
 	var f func(node *Node, prefix string, isLast bool)
 	f = func(node *Node, prefix string, isLast bool) {
 		out += node.Page.SprintPageLineColored(&prefix, isLast)
-		for i, child := range node.Children {
-			isLast := i == len(node.Children)-1
+		for i, child := range node.GetChildren() {
+			isLast := i == len(node.GetChildren())-1
 			f(child, prefix, isLast)
 		}
 	}
@@ -62,7 +71,7 @@ func (node *Node) ToJSONPage() *JsonPage {
 		}
 	}
 	exportNode.Children = make([]*JsonPage, 0)
-	for _, child := range node.Children {
+	for _, child := range node.GetChildren() {
 		exportNode.Children = append(exportNode.Children, child.ToJSONPage())
 	}
 	return exportNode
@@ -91,4 +100,15 @@ func (node *Node) Display() {
 		return
 	}
 	fmt.Print(out)
+}
+
+func (node *Node) GetAllChildrenOfLevel(level int) []*Node {
+	if level == 0 {
+		return []*Node{node}
+	}
+	var children []*Node
+	for _, child := range node.GetChildren() {
+		children = append(children, child.GetAllChildrenOfLevel(level-1)...)
+	}
+	return children
 }

@@ -13,14 +13,14 @@ import (
 )
 
 type Options struct {
-	URL             string            `name:"url"`
-	Level           int               `name:"level"`
-	LiveMode        bool              `name:"live"`
+	URL   string `name:"url"`
+	Level int    `name:"level"`
+	//LiveMode        bool              `name:"live"`
 	ExportFile      string            `name:"save to file"`
 	RegexMap        map[string]string `name:"regexes"`
 	StatusResponses []int             `name:"exclude codes"`
 	IncludedUrls    []string          `name:"include"`
-	MaxConcurrency  int               `name:"max concurrency"`
+	Workers         int               `name:"workers"`
 	Delay           int               `name:"delay"`
 	Proxy           *urlTool.URL      `name:"proxy"`
 	TimeOut         int               `name:"timeout"`
@@ -164,10 +164,10 @@ func ValidateThenBuildOption(cmd *cobra.Command) (*Options, error) {
 		return nil, err
 	}
 
-	liveMode, err := cmd.Flags().GetBool("live")
-	if err != nil {
-		return nil, err
-	}
+	//liveMode, err := cmd.Flags().GetBool("live")
+	//if err != nil {
+	//	return nil, err
+	//}
 
 	if level < 0 {
 		return nil, err
@@ -195,11 +195,8 @@ func ValidateThenBuildOption(cmd *cobra.Command) (*Options, error) {
 			return nil, fmt.Errorf("invalid domain  %s", include)
 		}
 	}
-	maxConcurrency, err := cmd.Flags().GetInt("max-concurrency")
+	workers, err := cmd.Flags().GetInt("worker")
 	if err != nil {
-		return nil, err
-	}
-	if maxConcurrency < 1 {
 		return nil, err
 	}
 
@@ -223,11 +220,7 @@ func ValidateThenBuildOption(cmd *cobra.Command) (*Options, error) {
 	} else {
 		parsedProxy = nil
 	}
-	// set max concurrency to 1 if live mode is enabled
-	if liveMode {
-		maxConcurrency = 1
-	}
-	// timeout
+
 	timeout, err := cmd.Flags().GetInt("timeout")
 	if err != nil {
 		return nil, err
@@ -262,16 +255,17 @@ func ValidateThenBuildOption(cmd *cobra.Command) (*Options, error) {
 	} else {
 		userAgentString = userAgent
 	}
-
+	if workers > 0 && delay > 0 {
+		return nil, fmt.Errorf("you can't use delay in paralell mode")
+	}
 	options := &Options{
 		URL:             url,
 		Level:           level,
-		LiveMode:        liveMode,
 		ExportFile:      exportFile,
 		RegexMap:        regexMap,
 		StatusResponses: excludedStatus,
 		IncludedUrls:    includedUrls,
-		MaxConcurrency:  maxConcurrency,
+		Workers:         workers,
 		Delay:           delay,
 		Proxy:           parsedProxy,
 		TimeOut:         timeout,
