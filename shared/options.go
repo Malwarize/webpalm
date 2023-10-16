@@ -164,11 +164,6 @@ func ValidateThenBuildOption(cmd *cobra.Command) (*Options, error) {
 		return nil, err
 	}
 
-	//liveMode, err := cmd.Flags().GetBool("live")
-	//if err != nil {
-	//	return nil, err
-	//}
-
 	if level < 0 {
 		return nil, err
 	}

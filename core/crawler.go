@@ -281,51 +281,6 @@ func (c *Crawler) AddMatches(page webtree.Page) {
 	}
 }
 
-//	func (c *Crawler) CrawlNodeBlock(w *webtree.Node) {
-//		var f func(w *webtree.Node, level int)
-//		semaphore := NewSemaphore(c.MaxConcurrency)
-//		f = func(w *webtree.Node, level int) {
-//			semaphore.Acquire()
-//			if level < 0 {
-//				semaphore.Release()
-//				return
-//			}
-//			c.Fetch(&w.Page)
-//			// add matches
-//			c.AddMatches(w.Page)
-//			if c.IsSkipablePage(w.Page) {
-//				semaphore.Release()
-//				return
-//			}
-//			// leaf node
-//			if level == 0 {
-//				semaphore.Release()
-//				return
-//			}
-//
-//			// add to visited node to cache
-//			c.Cache.AddVisited(w.Page.GetUrl())
-//			links := c.ExtractLinks(&w.Page)
-//			semaphore.Release()
-//			// add children
-//			wg := sync.WaitGroup{}
-//			for _, link := range links {
-//				wg.Add(1)
-//				go func(link string) {
-//					if c.isSkipableUrl(link) {
-//						defer wg.Done()
-//						return
-//					}
-//					child := w.AddChild(webtree.NewPage())
-//					child.Page.SetUrl(link)
-//					f(child, level-1)
-//					defer wg.Done()
-//				}(link)
-//			}
-//			wg.Wait()
-//		}
-//		f(w, c.Level)
-//	}
 func (c *Crawler) ProcessANode(node *webtree.Node) {
 	c.Fetch(&node.Page)
 	c.AddMatches(node.Page)
