@@ -20,7 +20,7 @@ and you are responsible for your actions.
 ### Features
 - [x] Generate a palm tree struct of web urls
 - [x] Dump data from body pages using regular expressions
-- [x] live output mode 
+- [x] Multi-threading and parallelism
 - [x] Export the web-tree to json, xml, txt
 - [x] Fast and easy to use
 - [x] Colorized output and error handling

@@ -7,8 +7,8 @@ import (
 func example() string {
 	var example string
 	example += color.BlueString(" get the palm tree of a website:") + "\n"
-	example += color.CyanString("  webpalm -u https://google.com -l1 --live") + "\n\n"
-
+	example += color.CyanString("  webpalm -u https://google.com -l1") + "\n\n"
+	example += color.CyanString("  webpalm -u https://google.com -l1 -w 10 # for 10 workers") + "\n\n"
 	example += color.BlueString(" dumping emails from google.com domain pages and comments in 2 level palming : (regexes are separated by comma)") + "\n"
 	example += color.CyanString("  webpalm -u https://google.com -l2 -i google.com --regexes emails=\"([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+)\",comments=\"\\<\\!--.*?-->\"") + "\n\n"
 
