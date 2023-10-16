@@ -3,6 +3,8 @@ package core
 import (
 	"crypto/tls"
 	"fmt"
+	"github.com/briandowns/spinner"
+	"github.com/fatih/color"
 	"io"
 	"net/http"
 	"os"
@@ -15,8 +17,6 @@ import (
 
 	"github.com/Malwarize/webpalm/v2/shared"
 	"github.com/Malwarize/webpalm/v2/webtree"
-	"github.com/briandowns/spinner"
-	"github.com/fatih/color"
 )
 
 var (
@@ -74,7 +74,6 @@ var UnreadableExtensions = []string{
 type Crawler struct {
 	RootURL        string
 	Level          int
-	LiveMode       bool
 	ExportFile     string
 	RegexMap       map[string]string
 	ExcludedStatus []int
@@ -82,7 +81,7 @@ type Crawler struct {
 	Client         *http.Client
 	UserAgent      string
 	Cache          Cache
-	MaxConcurrency int
+	Workers        int
 	Delay          int
 }
 
@@ -90,12 +89,11 @@ func NewCrawler(options *shared.Options) *Crawler {
 	crawler := Crawler{
 		RootURL:        options.URL,
 		Level:          options.Level,
-		LiveMode:       options.LiveMode,
 		ExportFile:     options.ExportFile,
 		RegexMap:       options.RegexMap,
 		ExcludedStatus: options.StatusResponses,
 		IncludedUrls:   options.IncludedUrls,
-		MaxConcurrency: options.MaxConcurrency,
+		Workers:        options.Workers,
 		Delay:          options.Delay,
 		UserAgent:      options.UserAgent,
 		Cache: Cache{
@@ -135,11 +133,15 @@ func (c *Crawler) Fetch(page *webtree.Page) {
 	}
 	resp, err := c.Client.Do(req)
 	if err != nil {
+		page.SetStatusCode(-1)
+		page.SetData("")
 		return
 	}
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
+		page.SetStatusCode(resp.StatusCode)
+		page.SetData("")
 		return
 	}
 	page.SetData(string(body))
@@ -279,50 +281,54 @@ func (c *Crawler) AddMatches(page webtree.Page) {
 	}
 }
 
-func (c *Crawler) CrawlNodeBlock(w *webtree.Node) {
-	var f func(w *webtree.Node, level int)
-	semaphore := NewSemaphore(c.MaxConcurrency)
-	f = func(w *webtree.Node, level int) {
-		semaphore.Acquire()
-		if level < 0 {
-			semaphore.Release()
-			return
-		}
-		c.Fetch(&w.Page)
-		// add matches
-		c.AddMatches(w.Page)
-		if c.IsSkipablePage(w.Page) {
-			semaphore.Release()
-			return
-		}
-		// leaf node
-		if level == 0 {
-			semaphore.Release()
-			return
-		}
-
-		// add to visited node to cache
-		c.Cache.AddVisited(w.Page.GetUrl())
-		links := c.ExtractLinks(&w.Page)
-		semaphore.Release()
-		// add children
-		wg := sync.WaitGroup{}
-		for _, link := range links {
-			wg.Add(1)
-			go func(link string) {
-				if c.isSkipableUrl(link) {
-					defer wg.Done()
-					return
-				}
-				child := w.AddChild(webtree.NewPage())
-				child.Page.SetUrl(link)
-				f(child, level-1)
-				defer wg.Done()
-			}(link)
-		}
-		wg.Wait()
+func (c *Crawler) ProcessANode(node *webtree.Node) {
+	c.Fetch(&node.Page)
+	c.AddMatches(node.Page)
+	if c.IsSkipablePage(node.Page) {
+		return
 	}
-	f(w, c.Level)
+	c.Cache.AddVisited(node.Page.GetUrl())
+	if c.Level < 1 {
+		return
+	}
+	links := c.ExtractLinks(&node.Page)
+	for _, link := range links {
+		if c.isSkipableUrl(link) {
+			continue
+		}
+		child := node.AddChild(webtree.NewPage())
+		child.Page.SetUrl(link)
+	}
+}
+
+func (c *Crawler) worker(tasks <-chan *webtree.Node, wg *sync.WaitGroup) {
+	defer wg.Done()
+	for task := range tasks {
+		c.ProcessANode(task)
+	}
+}
+
+func (c *Crawler) CrawlNodeBlock(w *webtree.Node, levelChangedChan chan int) {
+	c.ProcessANode(w)
+	level := c.Level
+	for c.Level >= 0 {
+		var wg sync.WaitGroup
+		tasks := make(chan *webtree.Node, c.Workers)
+		for i := 0; i < c.Workers; i++ {
+			wg.Add(1)
+			go c.worker(tasks, &wg)
+		}
+		children := w.GetAllChildrenOfLevel(level - c.Level)
+		for _, child := range children {
+			tasks <- child
+		}
+		close(tasks)
+		wg.Wait()
+
+		//signal to spinner that level has changed
+		c.Level--
+		levelChangedChan <- level - c.Level
+	}
 }
 
 func (c *Crawler) CrawlNodeLive(w *webtree.Node) {
@@ -394,7 +400,7 @@ func (c *Crawler) Crawl() {
 	go func() {
 		<-interruptChan
 		fmt.Println("\033[?25h")
-		if !c.LiveMode {
+		if c.Workers > 0 {
 			root.Display()
 		}
 		if c.ExportFile != "" {
@@ -406,18 +412,33 @@ func (c *Crawler) Crawl() {
 	}()
 
 	// live mode or block mode
-	if c.LiveMode {
+	if c.Workers == 0 {
 		c.CrawlNodeLive(&root)
 	} else {
-		var s *spinner.Spinner
-		func(s **spinner.Spinner) {
-			*s = spinner.New(spinner.CharSets[9], 100*time.Millisecond)
-			(*s).Prefix = color.GreenString("incursion ... ")
-			(*s).Start()
-			_ = (*s).Color("yellow")
-		}(&s)
-		c.CrawlNodeBlock(&root)
-		s.Stop()
+		color.Yellow("NOTE: This program is running in parallel mode, so you won't be able to see the output directly until the tree is entirely built. You can observe the output in your saved file, which is updated at each level traversal.")
+		LevelChangedChan := make(chan int, 1)
+		go func() {
+			s := spinner.New(spinner.CharSets[9], 100*time.Millisecond)
+			s.Prefix = color.GreenString("incursion ... ")
+			s.Suffix = color.CyanString(" [ crawling level %d ]", 0)
+			_ = s.Color("yellow")
+			s.Start()
+			for {
+				l := <-LevelChangedChan
+				if c.Level < 0 {
+					s.Stop()
+					return
+				}
+				s.Suffix = color.CyanString(" [ crawling level %d ]", l)
+				s.Restart()
+				// save results
+				if c.ExportFile != "" {
+					c.SaveResults(root)
+				}
+			}
+		}()
+
+		c.CrawlNodeBlock(&root, LevelChangedChan)
 		root.Display()
 	}
 	fmt.Println("\033[?25h")

@@ -43,7 +43,7 @@ func init() {
 	}
 	rootCmd.Flags().IntP("level", "l", 0, "level of palming / ex: -l2")
 
-	rootCmd.Flags().Bool("live", false, "live output mode (slow but live streaming) use only 1 thread / ex: --live")
+	//rootCmd.Flags().Bool("live", false, "live output mode (slow but live streaming) use only 1 thread / ex: --live")
 
 	rootCmd.Flags().StringP("output", "o", "", "file to export the result (f.json, f.xml, f.txt) / ex: -o result.json")
 
@@ -53,7 +53,7 @@ func init() {
 
 	rootCmd.Flags().StringSliceP("include", "i", []string{}, "include only domains / ex : -i google.com,facebook.com")
 
-	rootCmd.Flags().IntP("max-concurrency", "m", 1000, "max concurrent tasks / ex: -m 10")
+	rootCmd.Flags().IntP("worker", "w", 0, "number of workers for multi-threading  / ex: -w 10")
 
 	rootCmd.Flags().IntP("delay", "d", 0, "delay (ms) between each request in live mode / ex: -d 200")
 

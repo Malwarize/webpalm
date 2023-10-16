@@ -51,21 +51,27 @@ webpalm -h
 ```
 ```
 Flags:
+  -d, --delay int                delay (ms) between each request / ex: -d 200
   -x, --exclude-code ints        status codes to exclude / ex : -x 404,500
   -h, --help                     help for webpalm
   -i, --include strings          include only domains / ex : -i google.com,facebook.com
   -l, --level int                level of palming / ex: -l2
-      --live                     live output mode (slow but live streaming) use only 1 thread / ex: --live
-  -m, --max-concurrency int      max concurrent tasks / ex: -m 10 (default 10)
   -o, --output string            file to export the result (f.json, f.xml, f.txt) / ex: -o result.json
+  -p, --proxy string             proxy to use / ex: -p http://proxy.com:8080
       --regexes stringToString   regexes to match in each page / ex: --regexes comments="\<\!--.*?-->" (default [])
+  -t, --timeout int              timeout in seconds / ex: -t 10 (default 10)
   -u, --url string               target url / ex: -u https://google.com
+  -a, --user-agent string        user agent to use / ex: -a chrome, firefox, safari, ie, edge, opera, android, ios, custom
+  -v, --version                  version for webpalm
+  -w, --worker int               number of workers for multi-threading  / ex: -w 10
 ```
 ### Examples
 
 #### get the palm tree of a website: 
 ```bash
-webpalm -u https://google.com -l1 --live
+webpalm -u https://google.com -l1
+# or
+webpalm -u https://google.com -l1 -w 3 # 3 workers (multi-threading)
 ```
 
 #### get palm tree of a website and exclude some status codes: 
@@ -75,7 +81,7 @@ webpalm -u https://google.com -l1 -x 404,500
 ```
 #### get the palm tree of a website and dump data from the body of the pages: 
 ```bash
-webpalm -u https://google.com -l1 --regexes comments="\<\!--.*?-->" -o result.json"
+webpalm -u https://google.com -l1 --regexes comments="\<\!--.*?-->" -o result.json
 ```
 
 this  will dump the comments of each page in the body of the page
@@ -99,11 +105,10 @@ webpalm -u https://google.com -l2 -i google.com,facebook.com
 this will crawl only the urls that contains google.com or facebook.com
 
 ### threading and concurrency
-####  get the palm tree of a website and use only 5 concurrent tasks:
+####  get the palm tree of a website using 100 workers:
 ```bash
-webpalm -u https://google.com -l2 -m 5
+webpalm -u https://google.com -l2 -w 100
 ```
-📝 **Note**  that the live mode is working with only 1 thread so you can't use it with the live mode
 
 
 ## Regexes Examples
@@ -122,7 +127,5 @@ you can also contact me on discord:`xorbit.`
 
 
 ## Powered By Malwarize
-[![image](https://user-images.githubusercontent.com/130087473/232165094-73347c46-71dc-47c0-820a-1eb36657a8c0.png)](https://discord.gg/g9y7D3xCab)
-
-
+[Join to Discord](https://discord.gg/ccBJZU99wT)
 
