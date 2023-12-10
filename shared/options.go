@@ -171,11 +171,25 @@ func ValidateThenBuildOption(cmd *cobra.Command) (*Options, error) {
 	if err != nil {
 		return nil, err
 	}
-	regexMap, err := cmd.Flags().GetStringToString("regexes")
+	regex, err := cmd.Flags().GetString("regexes")
 	if err != nil {
 		return nil, err
 	}
+	regexMap := make(map[string]string)
+	ss := strings.Split(regex, `",`)
+	lastkey := ""
+        for _, v := range ss {
+                r := strings.Split(v, `="`)
+                regexMap[r[0]] = r[1]
+		lastkey = r[0]
+        }
+	// handle the last edge case
+	regexMap[lastkey] = regexMap[lastkey][:len(regexMap[lastkey])-1]
 
+        for k, v := range regexMap {
+                println(k, v)
+        }
+	
 	excludedStatus, err := cmd.Flags().GetIntSlice("exclude-code")
 	if err != nil {
 		return nil, err
