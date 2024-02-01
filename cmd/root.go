@@ -45,7 +45,10 @@ func init() {
 
 	rootCmd.Flags().StringP("output", "o", "", "file to export the result (f.json, f.xml, f.txt) / ex: -o result.json")
 
-	rootCmd.Flags().StringToString("regexes", map[string]string{}, "regexes to match in each page / ex: --regexes comments=\"\\<\\!--.*?-->\"")
+	// rootCmd.Flags().StringToString("regexes", map[string]string{}, "regexes to match in each page / ex: --regexes comments=\"\\<\\!--.*?-->\"")
+
+	var regexesFlag shared.RegexFlag
+	rootCmd.Flags().Var(&regexesFlag, "regexes", "regexes to match in each page / ex: --regexes comments=\"\\<\\!--.*?-->\"")
 
 	rootCmd.Flags().IntSliceP("exclude-code", "x", []int{}, "status codes to exclude / ex : -x 404,500")
 
