@@ -171,7 +171,8 @@ func ValidateThenBuildOption(cmd *cobra.Command) (*Options, error) {
 	if err != nil {
 		return nil, err
 	}
-	regexMap, err := cmd.Flags().GetStringToString("regexes")
+	// regexMap, err := cmd.Flags().GetStringToString("regexes")
+	regexMap, err := cmd.Flags().Lookup("regexes").Value.(*RegexFlag).Value(), nil
 	if err != nil {
 		return nil, err
 	}
