@@ -9,13 +9,14 @@ import (
 )
 
 func TestCrawler(t *testing.T) {
-	var exportFile = "test.xml"
+	exportFile := "test.xml"
+	includeUrls := []string{"youtube.com"}
 	crawler := core.Crawler{
 		RootURL:      "file://arabian_nights.html",
 		Level:        2,
 		Client:       &http.Client{},
 		ExportFile:   exportFile,
-		IncludedUrls: []string{"youtube.com"},
+		IncludedUrls: includeUrls,
 		RegexMap: map[string]string{
 			"email":    "[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+",
 			"comments": "<!--.*?-->",
