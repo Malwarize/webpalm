@@ -16,5 +16,5 @@ func TestIsValidDomain(t *testing.T) {
 func TestInvalidParseRegexes(t *testing.T) {
 	var data = "\bpassword\b.{0,10}"
 	_, err := shared.ParseRegexes(data)
-	assert.NotEmpty(t, err)
+	assert.NotEmpty(t, err, "Error exists!")
 }
