@@ -31,7 +31,7 @@ func (r *RegexFlag) Value() map[string]string {
 }
 
 func isBetween(s string, a string, b string, index int) bool {
-	return strings.Count(s[:index], a) == strings.Count(s[index:], b)
+	return strings.Count(s[:index], a) == strings.Count(s[index:], b) && strings.Count(s[:index], b) != 0
 }
 
 func ParseRegexes(stream string) (map[string]string, error) {
