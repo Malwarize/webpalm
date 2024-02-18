@@ -9,7 +9,8 @@ import (
 
 func TestIsValidDomain(t *testing.T) {
 	var exportFile = "8.8.8.8"
-	assert.True(t, shared.IsValidDomain(exportFile), "Valid Domain!")
+	isValidDomain := shared.IsValidDomain(exportFile)
+	assert.True(t, isValidDomain, "Valid Domain!")
 }
 
 func TestInvalidParseRegexes(t *testing.T) {
