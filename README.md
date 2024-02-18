@@ -121,6 +121,9 @@ webpalm -u https://google.com -l2 -w 100
 
 Don't forget escaping the regexes if needed
 
+## Tests
+You can run unit tests to gain more confidence in the enhancements or changes to the code by running `go test -v ./...`
+
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 you can also contact me on discord:`xorbit.`
