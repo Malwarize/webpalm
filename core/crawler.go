@@ -235,7 +235,7 @@ func (c *Crawler) Export(tree *webtree.Node, format string, filename string) err
 	return nil
 }
 
-func (c *Crawler) isSkipableUrl(u string) bool {
+func (c *Crawler) IsSkipableUrl(u string) bool {
 	for _, v := range UnreadableExtensions {
 		if strings.HasSuffix(u, v) {
 			return true
@@ -267,7 +267,7 @@ func (c *Crawler) IsSkipablePage(page *webtree.Page) bool {
 	}
 	if page.GetStatusCode() == 0 ||
 		isInCode(page.GetStatusCode(), c.ExcludedStatus) ||
-		c.isSkipableUrl(page.GetUrl()) ||
+		c.IsSkipableUrl(page.GetUrl()) ||
 		c.Cache.IsVisited(page.GetUrl()) {
 		return true
 	}
@@ -296,7 +296,7 @@ func (c *Crawler) ProcessANode(node *webtree.Node) {
 	}
 	links := c.ExtractLinks(node.Page)
 	for _, link := range links {
-		if c.isSkipableUrl(link) {
+		if c.IsSkipableUrl(link) {
 			continue
 		}
 		child := node.AddChild(webtree.NewPage())
@@ -365,7 +365,7 @@ func (c *Crawler) CrawlNodeLive(w *webtree.Node) {
 
 		// add children
 		for i, link := range links {
-			if c.isSkipableUrl(link) {
+			if c.IsSkipableUrl(link) {
 				continue
 			}
 			child := w.AddChild(webtree.NewPage())
