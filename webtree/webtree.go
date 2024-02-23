@@ -6,19 +6,35 @@ import (
 )
 
 type Node struct {
-	Page     Page
+	Page     *Page
 	Parent   *Node
 	Children []*Node
-	mutex    sync.Mutex
+	mutex    *sync.Mutex
+}
+
+func NewNode(
+	page *Page,
+	parent *Node,
+	children []*Node,
+) *Node {
+	return &Node{
+		Page:     page,
+		Parent:   parent,
+		Children: children,
+		mutex:    &sync.Mutex{},
+	}
 }
 
 func (node *Node) AddChild(page *Page) *Node {
 	node.mutex.Lock()
 	defer node.mutex.Unlock()
-	child := &Node{Page: *page, Parent: node}
+	// child := &Node{Page: *page, Parent: node}
+	// node.Children = append(node.Children, child)
+	child := NewNode(page, node, make([]*Node, 0))
 	node.Children = append(node.Children, child)
 	return child
 }
+
 func (node *Node) GetChildren() []*Node {
 	node.mutex.Lock()
 	defer node.mutex.Unlock()
@@ -83,7 +99,10 @@ func (node *Node) ToXMLPage() *XmlPage {
 	exportNode.StatusCode = node.Page.GetStatusCode()
 	for name, results := range node.Page.GetResults() {
 		for _, result := range results {
-			exportNode.Results = append(exportNode.Results, &XmlPageResult{Pattern: name, Result: []string{result}})
+			exportNode.Results = append(
+				exportNode.Results,
+				&XmlPageResult{Pattern: name, Result: []string{result}},
+			)
 		}
 	}
 	exportNode.Children = make([]*XmlPage, 0)

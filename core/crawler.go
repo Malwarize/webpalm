@@ -3,8 +3,6 @@ package core
 import (
 	"crypto/tls"
 	"fmt"
-	"github.com/briandowns/spinner"
-	"github.com/fatih/color"
 	"io"
 	"net/http"
 	"os"
@@ -14,6 +12,9 @@ import (
 	"sync"
 	"syscall"
 	"time"
+
+	"github.com/briandowns/spinner"
+	"github.com/fatih/color"
 
 	"github.com/Malwarize/webpalm/v2/shared"
 	"github.com/Malwarize/webpalm/v2/webtree"
@@ -163,7 +164,9 @@ func (c *Crawler) ExtractLinks(page *webtree.Page) (links []string) {
 			continue
 		}
 		// check if it is a relative url
-		if strings.HasPrefix(match[1], "/") || strings.HasPrefix(match[1], "./") || strings.HasPrefix(match[1], "../") || strings.HasSuffix(match[1], "/") {
+		if strings.HasPrefix(match[1], "/") || strings.HasPrefix(match[1], "./") ||
+			strings.HasPrefix(match[1], "../") ||
+			strings.HasSuffix(match[1], "/") {
 			u, err := page.ConvertToAbsoluteURL(match[1])
 			if err != nil {
 				continue
@@ -174,7 +177,7 @@ func (c *Crawler) ExtractLinks(page *webtree.Page) (links []string) {
 	return
 }
 
-func (c *Crawler) ExportJSON(root webtree.Node, filename string) error {
+func (c *Crawler) ExportJSON(root *webtree.Node, filename string) error {
 	data, err := root.SprintJSON()
 	if err != nil {
 		return err
@@ -186,7 +189,7 @@ func (c *Crawler) ExportJSON(root webtree.Node, filename string) error {
 	return nil
 }
 
-func (c *Crawler) ExportTXT(root webtree.Node, filename string) error {
+func (c *Crawler) ExportTXT(root *webtree.Node, filename string) error {
 	data, err := root.SprintTXT()
 	if err != nil {
 		return err
@@ -198,7 +201,7 @@ func (c *Crawler) ExportTXT(root webtree.Node, filename string) error {
 	return nil
 }
 
-func (c *Crawler) ExportXML(tree webtree.Node, filename string) error {
+func (c *Crawler) ExportXML(tree *webtree.Node, filename string) error {
 	data, err := tree.SprintXML()
 	if err != nil {
 		return err
@@ -210,7 +213,7 @@ func (c *Crawler) ExportXML(tree webtree.Node, filename string) error {
 	return nil
 }
 
-func (c *Crawler) Export(tree webtree.Node, format string, filename string) error {
+func (c *Crawler) Export(tree *webtree.Node, format string, filename string) error {
 	if format == "json" {
 		err := c.ExportJSON(tree, filename)
 		if err != nil {
@@ -253,7 +256,7 @@ func (c *Crawler) isSkipableUrl(u string) bool {
 	return true
 }
 
-func (c *Crawler) IsSkipablePage(page webtree.Page) bool {
+func (c *Crawler) IsSkipablePage(page *webtree.Page) bool {
 	isInCode := func(status int, arr []int) bool {
 		for _, v := range arr {
 			if v == status {
@@ -271,7 +274,7 @@ func (c *Crawler) IsSkipablePage(page webtree.Page) bool {
 	return false
 }
 
-func (c *Crawler) AddMatches(page webtree.Page) {
+func (c *Crawler) AddMatches(page *webtree.Page) {
 	for rname, regex := range c.RegexMap {
 		r := regexp.MustCompile(regex)
 		matches := r.FindAllString(page.GetData(), -1)
@@ -282,7 +285,7 @@ func (c *Crawler) AddMatches(page webtree.Page) {
 }
 
 func (c *Crawler) ProcessANode(node *webtree.Node) {
-	c.Fetch(&node.Page)
+	c.Fetch(node.Page)
 	c.AddMatches(node.Page)
 	if c.IsSkipablePage(node.Page) {
 		return
@@ -291,7 +294,7 @@ func (c *Crawler) ProcessANode(node *webtree.Node) {
 	if c.Level < 1 {
 		return
 	}
-	links := c.ExtractLinks(&node.Page)
+	links := c.ExtractLinks(node.Page)
 	for _, link := range links {
 		if c.isSkipableUrl(link) {
 			continue
@@ -325,7 +328,7 @@ func (c *Crawler) CrawlNodeBlock(w *webtree.Node, levelChangedChan chan int) {
 		close(tasks)
 		wg.Wait()
 
-		//signal to spinner that level has changed
+		// signal to spinner that level has changed
 		c.Level--
 		levelChangedChan <- level - c.Level
 	}
@@ -337,7 +340,7 @@ func (c *Crawler) CrawlNodeLive(w *webtree.Node) {
 		if level < 0 {
 			return
 		}
-		c.Fetch(&w.Page)
+		c.Fetch(w.Page)
 
 		if c.Delay > 0 {
 			time.Sleep(time.Duration(c.Delay) * time.Millisecond)
@@ -358,7 +361,7 @@ func (c *Crawler) CrawlNodeLive(w *webtree.Node) {
 		// add visited node to cache
 		c.Cache.AddVisited(w.Page.GetUrl())
 
-		links := c.ExtractLinks(&w.Page)
+		links := c.ExtractLinks(w.Page)
 
 		// add children
 		for i, link := range links {
@@ -373,7 +376,7 @@ func (c *Crawler) CrawlNodeLive(w *webtree.Node) {
 	f(w, c.Level, "", true)
 }
 
-func (c *Crawler) SaveResults(root webtree.Node) {
+func (c *Crawler) SaveResults(root *webtree.Node) {
 	if strings.HasSuffix(c.ExportFile, ".txt") {
 		err := c.Export(root, "txt", c.ExportFile)
 		if err != nil {
@@ -393,7 +396,8 @@ func (c *Crawler) SaveResults(root webtree.Node) {
 }
 
 func (c *Crawler) Crawl() {
-	root := webtree.Node{}
+	// root := *webtree.Node{}
+	root := webtree.NewNode(webtree.NewPage(), nil, make([]*webtree.Node, 0))
 	root.Page.SetUrl(c.RootURL)
 	interruptChan := make(chan os.Signal, 1)
 	signal.Notify(interruptChan, syscall.SIGINT, syscall.SIGTERM)
@@ -413,7 +417,7 @@ func (c *Crawler) Crawl() {
 
 	// live mode or block mode
 	if c.Workers == 0 {
-		c.CrawlNodeLive(&root)
+		c.CrawlNodeLive(root)
 	} else {
 		color.Yellow("NOTE: This program is running in parallel mode, so you won't be able to see the output directly until the tree is entirely built. You can observe the output in your saved file, which is updated at each level traversal.")
 		LevelChangedChan := make(chan int, 1)
@@ -438,7 +442,7 @@ func (c *Crawler) Crawl() {
 			}
 		}()
 
-		c.CrawlNodeBlock(&root, LevelChangedChan)
+		c.CrawlNodeBlock(root, LevelChangedChan)
 		root.Display()
 	}
 	fmt.Println("\033[?25h")

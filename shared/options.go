@@ -216,7 +216,6 @@ func ValidateThenBuildOption(cmd *cobra.Command) (*Options, error) {
 	} else {
 		parsedProxy = nil
 	}
-
 	timeout, err := cmd.Flags().GetInt("timeout")
 	if err != nil {
 		return nil, err
