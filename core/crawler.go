@@ -98,7 +98,7 @@ func NewCrawler(options *shared.Options) *Crawler {
 		Delay:          options.Delay,
 		UserAgent:      options.UserAgent,
 		Cache: Cache{
-			Visited: make(map[string]bool),
+			Visited: make(map[string]struct{}),
 		},
 	}
 	transport := &http.Transport{
