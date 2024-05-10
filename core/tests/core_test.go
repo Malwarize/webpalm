@@ -11,7 +11,7 @@ import (
 )
 
 func TestCache_AddAndIsVisited(t *testing.T) {
-	cache := core.Cache{Visited: make(map[string]bool)}
+	cache := core.Cache{Visited: make(map[string]struct{})}
 	url := "http://example.com"
 
 	// Initially, the URL should not be marked as visited

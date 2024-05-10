@@ -9,7 +9,7 @@ import (
 )
 
 func TestCache(t *testing.T) {
-	cache := core.Cache{Visited: make(map[string]bool)}
+	cache := core.Cache{Visited: make(map[string]struct{})}
 	url := "http://example.com"
 
 	// Add the URL to the cache
