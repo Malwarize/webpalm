@@ -28,109 +28,86 @@ type Options struct {
 }
 
 func (o *Options) BuildOptionBanner() string {
-	var banner string
-	banner += color.RedString("┌")
-	banner += color.RedString("[")
-	banner += color.MagentaString((*o).URL)
-	banner += color.RedString("]\n")
-	t := reflect.TypeOf(*o)
-	for i := 0; i < t.NumField(); i++ {
+	var sb strings.Builder
 
+	sb.WriteString(color.RedString("┌["))
+	sb.WriteString(color.MagentaString((*o).URL))
+	sb.WriteString(color.RedString("]\n"))
+
+	t := reflect.TypeOf(*o)
+	v := reflect.ValueOf(*o)
+	for i := 0; i < t.NumField(); i++ {
 		field := t.Field(i)
 		name := field.Tag.Get("name")
 		if name == "url" {
 			continue
 		}
-		value := reflect.ValueOf(*o).Field(i).Interface()
+
+		value := v.Field(i).Interface()
 		if value == nil || value == "" || value == false {
-			banner += color.RedString("│")
-			banner += color.BlueString(name + ": ")
-			banner += color.CyanString("not set")
-			banner += "\n"
+			sb.WriteString(color.RedString("│"))
+			sb.WriteString(color.BlueString(name + ": "))
+			sb.WriteString(color.CyanString("not set\n"))
 			continue
 		}
+		sb.WriteString(color.RedString("│"))
+		sb.WriteString(color.BlueString(name + ": "))
 
-		typeof := reflect.TypeOf(value)
-		if typeof.Kind() == reflect.Slice {
-			s := reflect.ValueOf(value)
-			if s.Len() == 0 {
-				banner += color.RedString("│")
-				banner += color.BlueString(name + ": ")
-				banner += color.CyanString("not set")
-				banner += "\n"
-				continue
-			}
-			banner += color.RedString("│")
-			banner += color.BlueString(name + ": ")
-
-			// check the type of the slice
-			typeOfIndex := s.Index(0).Kind()
-			if typeOfIndex == reflect.Int {
-				for i := 0; i < s.Len(); i++ {
-					if i == s.Len()-1 {
-						banner += color.CyanString(" %d", s.Index(i).Interface().(int))
-						continue
-					}
-
-					banner += color.CyanString(" %d", s.Index(i).Interface().(int))
-					banner += color.CyanString(",")
-				}
-			} else if typeOfIndex == reflect.String {
-				for i := 0; i < s.Len(); i++ {
-					banner += color.CyanString("\n")
-					banner += color.RedString("│")
-					banner += color.CyanString("  %s", s.Index(i).Interface().(string))
-				}
-			}
-			banner += "\n"
-
-		} else if typeof.Kind() == reflect.String {
-
-			banner += color.RedString("│")
-			banner += color.BlueString(name + ": ")
-			banner += color.CyanString("%s", value.(string))
-			banner += "\n"
-		} else if typeof.Kind() == reflect.Int {
-			banner += color.RedString("│")
-			banner += color.BlueString(name + ": ")
-			banner += color.CyanString("%d", value.(int))
-			banner += "\n"
-		} else if typeof.Kind() == reflect.Bool {
-			banner += color.RedString("│")
-			banner += color.BlueString(name + ": ")
-			banner += color.CyanString("%t", value.(bool))
-			banner += "\n"
-		} else if typeof.Kind() == reflect.Map {
-			if len(value.(map[string]string)) == 0 {
-				banner += color.RedString("│")
-				banner += color.BlueString(name + ": ")
-				banner += color.CyanString("not set")
-				banner += "\n"
-				continue
-			}
-			banner += color.RedString("│")
-			banner += color.BlueString(name + ": ")
-			banner += color.CyanString("\n")
-			for k, v := range value.(map[string]string) {
-				banner += color.RedString("│")
-				banner += color.CyanString("  %s: %s", k, v)
-				banner += "\n"
-			}
-		} else {
-
-			banner += color.RedString("│")
-			banner += color.BlueString(name + ": ")
-			if fmt.Sprintf("%v", value) == "<nil>" {
-				banner += color.CyanString("not set")
+		switch value := value.(type) {
+		case []string:
+			if len(value) == 0 {
+				sb.WriteString(color.CyanString("not set"))
 			} else {
-				banner += color.CyanString("%v", value)
+				sb.WriteString(color.CyanString("\n"))
+				for _, s := range value {
+					sb.WriteString(color.RedString("│"))
+					sb.WriteString(color.CyanString("  %s", s))
+					sb.WriteString("\n")
+				}
 			}
-			banner += "\n"
+		case []int:
+			if len(value) == 0 {
+				sb.WriteString(color.CyanString("not set"))
+			} else {
+				for i, v := range value {
+					if i == 0 {
+						sb.WriteString(color.CyanString("%d", v))
+					} else {
+						sb.WriteString(color.CyanString(", %d", v))
+					}
+				}
+			}
+		case map[string]string:
+			if len(value) == 0 {
+				sb.WriteString(color.CyanString("not set"))
+			} else {
+				sb.WriteString(color.CyanString("\n"))
+				for k, v := range value {
+					sb.WriteString(color.RedString("│"))
+					sb.WriteString(color.CyanString("  %s: %s", k, v))
+					sb.WriteString("\n")
+				}
+			}
+		case string:
+			sb.WriteString(color.CyanString("%s", value))
+		case int:
+			sb.WriteString(color.CyanString("%d", value))
+		case bool:
+			sb.WriteString(color.CyanString("%t", value))
+		default:
+			if fmt.Sprintf("%v", value) == "<nil>" {
+				sb.WriteString(color.CyanString("not set"))
+			} else {
+				sb.WriteString(color.CyanString("%v", value))
+			}
 		}
 
+		sb.WriteString("\n")
 	}
-	banner += color.RedString("└")
-	return banner
+
+	sb.WriteString(color.RedString("└"))
+
+	return sb.String()
 }
 
 func (o *Options) PrintBanner() {
@@ -172,10 +149,7 @@ func ValidateThenBuildOption(cmd *cobra.Command) (*Options, error) {
 		return nil, err
 	}
 	// regexMap, err := cmd.Flags().GetStringToString("regexes")
-	regexMap, err := cmd.Flags().Lookup("regexes").Value.(*RegexFlag).Value(), nil
-	if err != nil {
-		return nil, err
-	}
+	regexMap := cmd.Flags().Lookup("regexes").Value.(*RegexFlag).Value()
 
 	excludedStatus, err := cmd.Flags().GetIntSlice("exclude-code")
 	if err != nil {
